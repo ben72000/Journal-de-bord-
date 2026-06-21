@@ -138,6 +138,9 @@
   .addition .atext{font-size:15px;line-height:1.55}
   .addition .adel{cursor:pointer;opacity:.5;font-size:11px}
   .addition .adel:hover{opacity:1}
+  .voicememo{margin-top:10px;padding:9px 12px;border-radius:11px;background:color-mix(in srgb,var(--entourage) 10%,var(--card));
+    border:1px solid color-mix(in srgb,var(--entourage) 28%,var(--line));font-size:13px;color:var(--entourage);cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:.02em}
+  .voicememo:active{opacity:.7}
   .confirm-row{display:flex;gap:8px;margin-top:10px}
   .confirm-row button{flex:1;border-radius:11px;padding:9px;font-family:'DM Mono',monospace;font-size:11.5px;letter-spacing:.04em;cursor:pointer;border:1px solid var(--line)}
   .confirm-row .yes{background:var(--no);color:#fff;border-color:var(--no)}
@@ -202,7 +205,7 @@
 <div class="app">
   <div class="topbar">
     <span class="clock" id="clock">—</span>
-    <div class="topright"><span class="ver" id="ver">v9</span><div class="lamp" id="lamp">💡</div></div>
+    <div class="topright"><span class="ver" id="ver">v10</span><div class="lamp" id="lamp">💡</div></div>
   </div>
 
   <div class="scroll">
@@ -357,7 +360,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION='v9';
+const VERSION='v10';
 const STORE_KEY='compagnon.data.v3';
 const DEFAULT={entries:[],health:{},rituals:[],products:[],people:[],vaultCode:null};
 function loadAll(){
@@ -450,12 +453,30 @@ sheetbg.addEventListener('click',closeSheet);
 function openCapture(mode){
   openSheet('<h3>Dépose quelque chose</h3><div class="sub">J\'enregistre, j\'horodate, et je range pour toi.</div>'+
     '<textarea class="ta" id="ta" placeholder="Dîner avec Paul au restaurant L\'Olivier, 47 €…"></textarea>'+
-    '<div class="sheet-actions"><div class="mic" id="mic">🎙️</div><button class="save" id="save" disabled>Déposer</button></div>');
+    '<div class="sheet-actions"><div class="mic" id="mic">🎙️</div><button class="save" id="save" disabled>Déposer</button></div>'+
+    '<div id="voicememo-zone" style="margin-top:14px"></div>');
   const ta=document.getElementById('ta'),saveBtn=document.getElementById('save'),mic=document.getElementById('mic');
+  let memoTitle=null;
   ta.addEventListener('input',()=>saveBtn.disabled=!ta.value.trim());
+  // zone mémo vocal : lier un enregistrement Dictaphone par son titre
+  const vz=document.getElementById('voicememo-zone');
+  vz.innerHTML='<div class="ghostbtn" id="link-memo" style="font-size:12px">🎙️ Lier un mémo du Dictaphone</div>';
+  document.getElementById('link-memo').addEventListener('click',()=>{
+    vz.innerHTML='<input class="input" id="memo-title" placeholder="Titre du mémo (ex: déjeuner Paul 14 juin)" style="margin-bottom:8px">'+
+      '<div class="ghostbtn" id="open-voicememos" style="font-size:12px;margin-bottom:6px">📲 Ouvrir le Dictaphone pour enregistrer</div>'+
+      '<div style="font-size:12px;color:var(--ink-soft);font-style:italic;line-height:1.45">Enregistre ton mémo dans Dictaphone avec ce même titre. Ta note gardera le repère pour le retrouver.</div>';
+    document.getElementById('memo-title').addEventListener('input',e=>{memoTitle=e.target.value.trim()||null;});
+    document.getElementById('open-voicememos').addEventListener('click',()=>{
+      // ouvre l'app Dictaphone native d'iOS
+      window.location.href='voicememos://';
+      setTimeout(()=>{ if(document.hasFocus()) toast('Si rien ne s\'ouvre, lance Dictaphone à la main'); },1200);
+    });
+  });
   saveBtn.addEventListener('click',()=>{
     const text=ta.value.trim();if(!text)return;
-    DATA.entries.unshift({id:Date.now(),text,created:new Date().toISOString(),tags:analyze(text)});
+    const note={id:Date.now(),text,created:new Date().toISOString(),tags:analyze(text)};
+    if(memoTitle)note.voiceMemo=memoTitle;
+    DATA.entries.unshift(note);
     persist();closeSheet();toast('Noté. C\'est rangé.');renderHome();
   });
   mic.addEventListener('click',()=>recording?stopRec():startRec(ta,saveBtn,mic));
@@ -511,6 +532,7 @@ function entryHTML(e){
     '<div class="edit" data-edit="'+e.id+'">✎</div>'+
     '<div class="etime">🕓 '+relative(e.created)+' · '+frTime(e.created)+(e.additions&&e.additions.length?' · modifié':'')+'</div>'+
     '<div class="etext">'+highlight(e.text,e.tags)+'</div>'+
+    (e.voiceMemo?'<div class="voicememo" data-memo="'+esc(e.voiceMemo)+'">🎙️ Mémo : '+esc(e.voiceMemo)+' <span style="opacity:.6">· ouvrir Dictaphone ›</span></div>':'')+
     (chips?'<div class="threads">'+chips+'</div>':'')+
     adds+'</div>';
 }
@@ -541,6 +563,11 @@ function wireEntries(scope){
     const [eid,aid]=x.dataset.adel.split('|');
     const entry=DATA.entries.find(en=>en.id==eid);
     if(entry){entry.additions=(entry.additions||[]).filter(a=>a.id!=aid);persist();renderHome();renderJournal();toast('Ajout retiré');}
+  }));
+  scope.querySelectorAll('[data-memo]').forEach(x=>x.addEventListener('click',ev=>{
+    ev.stopPropagation();
+    window.location.href='voicememos://';
+    setTimeout(()=>{if(document.hasFocus())toast('Ouvre Dictaphone et cherche « '+x.dataset.memo+' »');},1200);
   }));
   scope.querySelectorAll('[data-cross]').forEach(x=>x.addEventListener('click',ev=>{
     ev.stopPropagation();
@@ -989,64 +1016,103 @@ document.getElementById('do-import').addEventListener('change',ev=>{
 function cleanDayOneText(raw){
   if(!raw)return '';
   let t=String(raw);
-  // Day One encode souvent les images par \![](dayone-moment://...) : on retire
   t=t.replace(/!\[\]\(dayone-moment:[^)]*\)/g,'');
-  t=t.replace(/!\[[^\]]*\]\([^)]*\)/g,''); // autres images markdown
-  // alléger le markdown lourd, garder le texte lisible
-  t=t.replace(/^#{1,6}\s+/gm,'');         // titres
-  t=t.replace(/\*\*([^*]+)\*\*/g,'$1');   // gras
-  t=t.replace(/\*([^*\n]+)\*/g,'$1');     // italique (simple, compatible)
-  t=t.replace(/\\\n/g,'\n').replace(/\\([_*#\[\]])/g,'$1'); // échappements
+  t=t.replace(/!\[[^\]]*\]\([^)]*\)/g,'');
+  t=t.replace(/\[([^\]]+)\]\([^)]*\)/g,'$1'); // liens markdown -> texte
+  t=t.replace(/^#{1,6}\s+/gm,'');
+  t=t.replace(/\*\*([^*]+)\*\*/g,'$1');
+  t=t.replace(/\*([^*\n]+)\*/g,'$1');
+  t=t.replace(/^>\s?/gm,'');                  // citations
+  t=t.replace(/\\\n/g,'\n').replace(/\\([_*#\[\]\\`])/g,'$1');
+  t=t.replace(/\u2028|\u2029/g,'\n');         // séparateurs unicode
   t=t.replace(/\n{3,}/g,'\n\n').trim();
   return t;
 }
+// extrait le texte d'une entrée Day One quel que soit le format
+function extractDayOneText(en){
+  if(typeof en.text==='string'&&en.text.trim())return en.text;
+  // certains exports mettent le texte dans richText (objet imbriqué)
+  if(en.richText){
+    try{
+      const rt=typeof en.richText==='string'?JSON.parse(en.richText):en.richText;
+      const parts=[];
+      (function walk(node){
+        if(!node)return;
+        if(typeof node==='string'){parts.push(node);return;}
+        if(Array.isArray(node)){node.forEach(walk);return;}
+        if(node.text)parts.push(node.text);
+        if(node.contents)walk(node.contents);
+        if(node.attributes&&node.attributes.line&&node.attributes.line.contents)walk(node.attributes.line.contents);
+      })(rt);
+      if(parts.length)return parts.join('');
+    }catch(e){}
+  }
+  return '';
+}
+function extractDayOneDate(en){
+  const d=en.creationDate||en.creationDateRaw||en.date||en.modifiedDate||null;
+  if(!d)return null;
+  const parsed=new Date(d);
+  return isNaN(parsed.getTime())?null:parsed.toISOString();
+}
 function importDayOne(json){
   let entries=[];
-  if(Array.isArray(json.entries))entries=json.entries;
+  if(json&&Array.isArray(json.entries))entries=json.entries;
   else if(Array.isArray(json))entries=json;
-  else throw new Error('format');
-  // dates déjà présentes pour éviter les doublons à la réimportation
+  else throw new Error('NO_ENTRIES');
   const existingKeys=new Set(DATA.entries.map(e=>e.created+'|'+(e.text||'').slice(0,40)));
-  let added=0, skipped=0;
+  let added=0,skipped=0,errors=0;
   entries.forEach(en=>{
-    const text=cleanDayOneText(en.text||en.richText||'');
-    const created=en.creationDate||en.creationDateRaw||en.date||null;
-    if(!text||!created){skipped++;return;}
-    const iso=new Date(created).toISOString();
-    const key=iso+'|'+text.slice(0,40);
-    if(existingKeys.has(key)){skipped++;return;}
-    existingKeys.add(key);
-    const note={id:Date.now()+Math.random(),text,created:iso,tags:analyze(text),source:'dayone'};
-    // lieu Day One -> trace de lieu
-    if(en.location&&en.location.placeName){
-      const ln='Lieu:'+en.location.placeName;
-      if(!note.tags.includes(ln))note.tags.push(ln);
-    }
-    DATA.entries.push(note);
-    added++;
+    try{
+      const text=cleanDayOneText(extractDayOneText(en));
+      const iso=extractDayOneDate(en);
+      if(!text||!iso){skipped++;return;}
+      const key=iso+'|'+text.slice(0,40);
+      if(existingKeys.has(key)){skipped++;return;}
+      existingKeys.add(key);
+      const note={id:Date.now()+Math.random(),text,created:iso,tags:analyze(text),source:'dayone'};
+      const place=en.location&&(en.location.placeName||en.location.localityName);
+      if(place){const ln='Lieu:'+place;if(!note.tags.includes(ln))note.tags.push(ln);}
+      DATA.entries.push(note);added++;
+    }catch(e){errors++;}
   });
-  // re-trier tout le journal par date
   DATA.entries.sort((a,b)=>new Date(b.created)-new Date(a.created));
   persist();
-  return {added,skipped,total:entries.length};
+  return {added,skipped,errors,total:entries.length};
 }
 document.getElementById('do-dayone').addEventListener('change',ev=>{
   const file=ev.target.files[0];if(!file)return;
   const info=document.getElementById('dayone-info');
-  info.textContent='Lecture du fichier…';
+  info.textContent='Lecture du fichier… (patiente quelques secondes)';
   const reader=new FileReader();
+  reader.onerror=()=>{info.textContent='Impossible de lire ce fichier. Réessaie après l\'avoir décompressé.';ev.target.value='';};
   reader.onload=()=>{
+    let raw=reader.result;
+    // retirer un éventuel BOM ou espace en tête qui casse JSON.parse
+    if(typeof raw==='string'){raw=raw.replace(/^\uFEFF/,'').trim();}
+    let json;
+    try{ json=JSON.parse(raw); }
+    catch(parseErr){
+      info.textContent='Le fichier n\'est pas un JSON lisible. Vérifie que tu as choisi Journal.json (et non le .zip ou un autre fichier).';
+      ev.target.value='';return;
+    }
+    let count=0;
+    if(json&&Array.isArray(json.entries))count=json.entries.length;
+    else if(Array.isArray(json))count=json.length;
+    if(!count){
+      info.textContent='JSON lu, mais aucune entrée trouvée. Ce fichier ne ressemble pas à un export Day One (pas de liste « entries »).';
+      ev.target.value='';return;
+    }
+    if(!confirm('Importer '+count+' entrée(s) Day One ? Elles s\'ajouteront à ton journal, avec leur date d\'origine.')){info.textContent='Import annulé.';ev.target.value='';return;}
     try{
-      const json=JSON.parse(reader.result);
-      const count=Array.isArray(json.entries)?json.entries.length:(Array.isArray(json)?json.length:0);
-      if(!count){info.textContent='Aucune entrée trouvée. As-tu bien choisi le fichier Journal.json ?';ev.target.value='';return;}
-      if(!confirm('Importer '+count+' entrée(s) Day One ? Elles s\'ajouteront à ton journal, avec leur date d\'origine.')){info.textContent='Import annulé.';ev.target.value='';return;}
       const r=importDayOne(json);
-      info.innerHTML='✓ '+r.added+' entrée(s) importée(s)'+(r.skipped?'<br>'+r.skipped+' ignorée(s) (doublons ou vides)':'');
+      info.innerHTML='✓ '+r.added+' entrée(s) importée(s)'+
+        (r.skipped?'<br>'+r.skipped+' ignorée(s) (doublons ou sans texte)':'')+
+        (r.errors?'<br>'+r.errors+' illisible(s)':'');
       toast(r.added+' souvenirs importés');
       renderHome();
     }catch(err){
-      info.textContent='Fichier non reconnu. Vérifie que c\'est bien le Journal.json exporté par Day One.';
+      info.textContent='Erreur pendant l\'import : '+(err.message||'inconnue')+'. Tes données actuelles sont intactes.';
     }
     ev.target.value='';
   };

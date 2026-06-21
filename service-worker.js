@@ -5,7 +5,7 @@
    séparément, dans le stockage de ton appareil). Il ne met en cache que
    l'app elle-même. */
 
-const CACHE = 'compagnon-v9';
+const CACHE = 'compagnon-v10';
 const ASSETS = [
   './',
   './index.html',
