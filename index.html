@@ -141,6 +141,19 @@
   .emeta{margin-top:8px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.02em;color:var(--ink-soft);opacity:.85}
   .voicememo{margin-top:10px;padding:9px 12px;border-radius:11px;background:color-mix(in srgb,var(--entourage) 10%,var(--card));
     border:1px solid color-mix(in srgb,var(--entourage) 28%,var(--line));font-size:13px;color:var(--entourage);cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:.02em}
+  .scale-pick{display:flex;gap:8px;margin-bottom:20px}
+  .scale-pick button{flex:1;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.04em;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);padding:10px;border-radius:11px;cursor:pointer;transition:all .2s}
+  .scale-pick button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .tl-head{font-family:'Fraunces',serif;font-size:18px;font-weight:450;margin:18px 0 10px;display:flex;align-items:baseline;gap:10px}
+  .tl-head .tl-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-soft);font-weight:400}
+  .tl-line{position:relative;padding-left:22px;margin-left:6px;border-left:2px solid var(--line)}
+  .tl-item{position:relative;padding:9px 0 9px 4px;cursor:pointer}
+  .tl-item::before{content:"";position:absolute;left:-27px;top:14px;width:9px;height:9px;border-radius:50%;background:var(--quotidien);border:2px solid var(--paper)}
+  .tl-item.marked::before{width:13px;height:13px;left:-29px;background:var(--projets)}
+  .tl-when{font-family:'DM Mono',monospace;font-size:10.5px;color:var(--ink-soft);letter-spacing:.03em}
+  .tl-text{font-size:15px;line-height:1.45;margin-top:2px}
+  .tl-star{color:var(--projets);cursor:pointer;margin-left:6px;opacity:.35;font-size:13px}
+  .tl-star.on{opacity:1}
   .voicememo:active{opacity:.7}
   .confirm-row{display:flex;gap:8px;margin-top:10px}
   .confirm-row button{flex:1;border-radius:11px;padding:9px;font-family:'DM Mono',monospace;font-size:11.5px;letter-spacing:.04em;cursor:pointer;border:1px solid var(--line)}
@@ -206,7 +219,7 @@
 <div class="app">
   <div class="topbar">
     <span class="clock" id="clock">—</span>
-    <div class="topright"><span class="ver" id="ver">v12</span><div class="lamp" id="lamp">💡</div></div>
+    <div class="topright"><span class="ver" id="ver">v13</span><div class="lamp" id="lamp">💡</div></div>
   </div>
 
   <div class="scroll">
@@ -221,7 +234,7 @@
           <div class="petal" data-mode="photo">📷</div>
           <div class="petal" data-mode="mail">✉️</div>
           <div class="core" id="core"><span class="plus">+</span><span class="lbl">Dépose quelque chose</span></div>
-          <div class="bubble" data-fam="projets" style="left:130px;top:2px;width:70px;height:70px;background:color-mix(in srgb,var(--projets) 16%,var(--card));border-color:color-mix(in srgb,var(--projets) 35%,var(--line))"><span class="ic">✦</span><span class="nm">Projets</span></div>
+          <div class="bubble" data-fam="projets" style="left:130px;top:2px;width:70px;height:70px;background:color-mix(in srgb,var(--projets) 16%,var(--card));border-color:color-mix(in srgb,var(--projets) 35%,var(--line))"><span class="ic">⧖</span><span class="nm">Frise</span></div>
           <div class="bubble" data-fam="quotidien" style="left:254px;top:92px;width:66px;height:66px;background:color-mix(in srgb,var(--quotidien) 16%,var(--card));border-color:color-mix(in srgb,var(--quotidien) 35%,var(--line))"><span class="ic">◐</span><span class="nm">Quotidien</span><span class="lock">🔒</span></div>
           <div class="bubble" data-fam="entourage" style="left:206px;top:235px;width:68px;height:68px;background:color-mix(in srgb,var(--entourage) 16%,var(--card));border-color:color-mix(in srgb,var(--entourage) 35%,var(--line))"><span class="ic">❀</span><span class="nm">Entourage</span></div>
           <div class="bubble" data-fam="intendance" style="left:60px;top:239px;width:60px;height:60px;background:color-mix(in srgb,var(--intendance) 16%,var(--card));border-color:color-mix(in srgb,var(--intendance) 35%,var(--line))"><span class="ic">▦</span><span class="nm">Radar</span></div>
@@ -305,6 +318,20 @@
       </div>
     </section>
 
+    <section class="view" data-view="timeline">
+      <div class="pad">
+        <div class="back" data-go="home">← accueil</div>
+        <div class="vtitle">La frise de ta vie</div>
+        <div class="vsub">Tout ce que tu as vécu, dans l'ordre du temps. Choisis l'échelle pour voir de près ou de loin.</div>
+        <div class="scale-pick" id="scale-pick">
+          <button data-scale="day">Jour</button>
+          <button data-scale="month" class="on">Mois</button>
+          <button data-scale="year">Année</button>
+        </div>
+        <div id="timeline-body"></div>
+      </div>
+    </section>
+
     <section class="view" data-view="review">
       <div class="pad">
         <div class="back" data-go="home">← accueil</div>
@@ -370,7 +397,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION='v12';
+const VERSION='v13';
 const STORE_KEY='compagnon.data.v3';
 const DEFAULT={entries:[],health:{},rituals:[],products:[],people:[],vaultCode:null};
 function loadAll(){
@@ -484,6 +511,7 @@ function go(v){
   if(v==='radar')renderRadar();
   if(v==='people')renderPeople();
   if(v==='review')renderReview();
+  if(v==='timeline')renderTimeline();
   if(v==='search'){renderSearch('');setTimeout(()=>document.getElementById('global-search').focus(),200);}
 }
 document.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.go)));
@@ -493,6 +521,7 @@ document.querySelectorAll('.bubble').forEach(b=>b.addEventListener('click',()=>{
   else if(f==='intendance')go('radar');
   else if(f==='culture')go('search');
   else if(f==='entourage')go('people');
+  else if(f==='projets')go('timeline');
   else toast('« '+b.querySelector('.nm').textContent+' » arrive bientôt');
 }));
 document.getElementById('backup-access').addEventListener('click',()=>{go('backup');renderVaultPane();});
@@ -720,6 +749,86 @@ function renderHome(){
     wireEntries(r);r.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.go)));
   }
 }
+
+/* ============================================================
+   CHRONOLOGIE UNIVERSELLE
+   ============================================================ */
+let timelineScale='month';
+function allEvents(){
+  // rassemble tout ce qui a une date, toutes familles confondues
+  const ev=[];
+  activeEntries().forEach(e=>ev.push({date:e.created,kind:'note',color:'var(--quotidien)',text:e.text.slice(0,90),id:e.id,marked:e.marked,raw:e}));
+  (DATA.products||[]).forEach(p=>ev.push({date:p.created,kind:'produit',color:'var(--intendance)',text:(VERDICTS[p.verdict]?VERDICTS[p.verdict][0]+' ':'')+p.name,id:'p'+p.id,marked:p.marked}));
+  Object.entries(DATA.health||{}).forEach(([day,h])=>{
+    if(h.energy!=null||h.mood)ev.push({date:h.at||day+'T12:00:00Z',kind:'santé',color:'var(--love)',text:'État : '+(h.mood||'')+(h.energy!=null?' énergie '+h.energy+'%':''),id:'h'+day});
+  });
+  return ev.sort((a,b)=>new Date(b.date)-new Date(a.date));
+}
+function scaleKey(date,scale){
+  const d=new Date(date);
+  if(scale==='day')return d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  if(scale==='year')return ''+d.getFullYear();
+  return d.toLocaleDateString('fr-FR',{month:'long',year:'numeric'}); // month
+}
+function renderTimeline(){
+  const body=document.getElementById('timeline-body');
+  const events=allEvents();
+  if(events.length===0){body.innerHTML='<div class="empty">Ta frise est vide. Dépose des notes, ou importe ton journal Day One, et ta vie se racontera ici.</div>';return;}
+  // grouper par échelle
+  const groups={};
+  events.forEach(e=>{const k=scaleKey(e.date,timelineScale);(groups[k]=groups[k]||[]).push(e);});
+  // à l'échelle année : ne montrer que les moments marquants + un résumé
+  let html='';
+  Object.entries(groups).forEach(([label,items])=>{
+    html+='<div class="tl-head">'+label+'<span class="tl-count">'+items.length+' moment'+(items.length>1?'s':'')+'</span></div>';
+    let shown=items;
+    if(timelineScale==='year'){
+      // de loin : seulement les marqués, sinon les 5 plus "denses"
+      const marked=items.filter(i=>i.marked);
+      shown=marked.length?marked:items.slice(0,6);
+    }else if(timelineScale==='month'){
+      shown=items.slice(0,40);
+    }
+    html+='<div class="tl-line">'+shown.map(e=>{
+      const t=new Date(e.date);
+      const when=timelineScale==='day'?t.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):t.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+      const starable=e.kind==='note';
+      return '<div class="tl-item'+(e.marked?' marked':'')+'" '+(e.raw?'data-tlid="'+e.id+'"':'')+'>'+
+        '<div class="tl-when">'+when+' · '+e.kind+'</div>'+
+        '<div class="tl-text">'+esc(e.text)+(e.text.length>=90?'…':'')+
+        (starable?'<span class="tl-star'+(e.marked?' on':'')+'" data-mark="'+e.id+'">★</span>':'')+
+        '</div></div>';
+    }).join('')+'</div>';
+    if(timelineScale==='year'&&items.length>shown.length){
+      html+='<div style="font-size:12px;color:var(--ink-soft);font-style:italic;margin:4px 0 0 28px">+ '+(items.length-shown.length)+' autres moments — zoome sur le mois pour les voir</div>';
+    }
+  });
+  body.innerHTML=html;
+  // clic sur une note -> ouvrir le détail (croisement de la note via son texte)
+  body.querySelectorAll('[data-tlid]').forEach(el=>el.addEventListener('click',ev=>{
+    if(ev.target.classList.contains('tl-star'))return;
+    const e=DATA.entries.find(x=>x.id==el.dataset.tlid);
+    if(e){openSingleEntry(e);}
+  }));
+  // étoile = marquer comme moment important
+  body.querySelectorAll('[data-mark]').forEach(el=>el.addEventListener('click',ev=>{
+    ev.stopPropagation();
+    const e=DATA.entries.find(x=>x.id==el.dataset.mark);
+    if(e){e.marked=!e.marked;persist();renderTimeline();toast(e.marked?'Moment marqué ★':'Marque retirée');}
+  }));
+}
+function openSingleEntry(e){
+  document.getElementById('crosstitle').textContent='Ce moment';
+  document.getElementById('crosssub').textContent=frDateYear(e.created)+' · '+frTime(e.created);
+  const cl=document.getElementById('crosslist');
+  cl.innerHTML=entryHTML(e);wireEntries(cl);
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('show',s.dataset.view==='cross'));
+  document.querySelector('.scroll').scrollTo({top:0,behavior:'smooth'});
+}
+document.querySelectorAll('#scale-pick button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('#scale-pick button').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');timelineScale=b.dataset.scale;renderTimeline();
+}));
 
 function renderReview(){
   const list=document.getElementById('review-list');
