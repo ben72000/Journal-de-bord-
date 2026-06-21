@@ -6,29 +6,31 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Compagnon">
-<meta name="theme-color" content="#F3EEE3">
+<meta name="theme-color" content="#DCE8E0">
 <title>Compagnon</title>
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,380;9..144,450;9..144,560&family=Newsreader:ital,opsz,wght@0,6..72,380;0,6..72,440;1,6..72,380&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --paper:#F3EEE3; --paper-2:#EBE3D3; --card:#FBF8F1;
-    --ink:#3A352C; --ink-soft:#73695A; --line:#DCD3C0;
-    --quotidien:#7BA89B; --entourage:#A9805C; --intendance:#7C99AE;
-    --culture:#8FB6B0; --projets:#C28F5A; --vault:#5E6B66;
-    --love:#7BA89B; --no:#B3654F;
-    --shadow:0 1px 2px rgba(58,53,44,.04),0 8px 24px rgba(58,53,44,.06);
-    --shadow-lg:0 6px 16px rgba(58,53,44,.08),0 20px 50px rgba(58,53,44,.10);
+    --paper:#DCE8E0; --paper-2:#D0E0D6; --card:#E6EFE8;
+    --ink:#42301E; --ink-soft:#7A6650; --line:#BFD3C7;
+    --quotidien:#5E8575; --entourage:#8A5A32; --intendance:#5D7D92;
+    --culture:#5E8575; --projets:#B0832F; --vault:#566B60;
+    --love:#5E8575; --no:#A6543A;
+    --or:#C99A45; --or-deep:#B0832F;
+    --shadow:0 1px 2px rgba(66,48,30,.03),0 6px 18px rgba(66,48,30,.05);
+    --shadow-lg:0 6px 16px rgba(66,48,30,.07),0 18px 44px rgba(66,48,30,.09);
   }
   body.night{
-    --paper:#21201C; --paper-2:#191814; --card:#2A2823;
-    --ink:#E9E2D2; --ink-soft:#A89E8A; --line:#39362F;
-    --quotidien:#6E9A8D; --entourage:#B98E68; --intendance:#7E9AAE;
-    --culture:#86ACA6; --projets:#CF9A63; --vault:#8A968F;
-    --love:#6E9A8D; --no:#C2705A;
+    --paper:#243831; --paper-2:#1E302A; --card:#2C413A;
+    --ink:#EDE4D2; --ink-soft:#A9B5AB; --line:#3C5249;
+    --quotidien:#84AD9C; --entourage:#C99A6E; --intendance:#84A0B3;
+    --culture:#84AD9C; --projets:#D4A85E; --vault:#93A39A;
+    --love:#84AD9C; --no:#C2705A;
+    --or:#D4A85E; --or-deep:#C99A45;
     --shadow:0 1px 2px rgba(0,0,0,.2),0 10px 30px rgba(0,0,0,.28);
     --shadow-lg:0 6px 16px rgba(0,0,0,.3),0 24px 60px rgba(0,0,0,.4);
   }
@@ -54,7 +56,7 @@
   .scroll::-webkit-scrollbar{display:none}
   .pad{padding:20px 22px 120px}
 
-  .greet{font-family:'Fraunces',serif;font-weight:380;font-size:24px;line-height:1.25;letter-spacing:-.01em}
+  .greet{font-family:'Fraunces',serif;font-weight:700;font-size:32px;line-height:1.12;letter-spacing:-.02em}
   .greet em{font-style:italic;color:var(--quotidien)}
   .murmur{color:var(--ink-soft);font-size:15px;margin:5px 0 0}
 
@@ -75,9 +77,9 @@
   .dial-wrap.open .petal:nth-child(3){transform:translate(-50%,calc(-50% + 72px)) scale(1)}
   .dial-wrap.open .petal:nth-child(4){transform:translate(calc(-50% - 72px),calc(-50% - 4px)) scale(1)}
   .bubble{position:absolute;border-radius:50%;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
-    border:1px solid var(--line);box-shadow:var(--shadow);transition:transform .25s,box-shadow .25s;text-align:center}
+    border:1px solid var(--line)!important;box-shadow:none;transition:transform .25s;text-align:center;background:color-mix(in srgb,var(--card) 70%,transparent)!important}
   .bubble:active{transform:scale(1.07)}
-  .bubble .ic{font-size:17px;line-height:1}
+  .bubble .ic{font-size:16px;line-height:1;opacity:.85}
   .bubble .nm{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:.03em;color:var(--ink-soft)}
   .bubble .lock{position:absolute;bottom:8px;right:10px;font-size:9px;opacity:.7}
 
@@ -87,7 +89,7 @@
     color:var(--ink-soft);margin:28px 2px 12px;display:flex;align-items:center;gap:8px}
   .eyebrow::after{content:"";flex:1;height:1px;background:var(--line)}
 
-  .pane{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden;margin-bottom:11px}
+  .pane{background:color-mix(in srgb,var(--card) 60%,transparent);border:1px solid color-mix(in srgb,var(--line) 70%,transparent);border-radius:12px;padding:14px 16px;box-shadow:none;position:relative;overflow:hidden;margin-bottom:11px}
   .pane .accent{position:absolute;left:0;top:0;bottom:0;width:3px}
   .pane .row{display:flex;align-items:center;justify-content:space-between;font-size:15px}
   .pane .lead{display:flex;align-items:center;gap:9px}
@@ -105,7 +107,7 @@
   .sheet::-webkit-scrollbar{display:none}
   .sheet.show{transform:translateY(0)}
   .grip{width:38px;height:4px;border-radius:3px;background:var(--line);margin:6px auto 14px}
-  .sheet h3{font-family:'Fraunces',serif;font-weight:450;font-size:19px;margin-bottom:4px}
+  .sheet h3{font-family:'Fraunces',serif;font-weight:600;font-size:20px;margin-bottom:4px;letter-spacing:-.01em}
   .sheet .sub{color:var(--ink-soft);font-size:13.5px;margin-bottom:14px}
   .ta{width:100%;min-height:120px;resize:none;border:1px solid var(--line);border-radius:16px;background:var(--card);
     color:var(--ink);font-family:'Newsreader',serif;font-size:17px;line-height:1.6;padding:14px 15px;outline:none}
@@ -114,12 +116,16 @@
   .mic{width:50px;height:50px;border-radius:50%;border:1px solid var(--line);background:var(--card);display:grid;place-items:center;font-size:20px;cursor:pointer;flex:0 0 50px;transition:all .2s}
   .mic.rec{background:color-mix(in srgb,var(--entourage) 22%,var(--card));border-color:var(--entourage);animation:pulse 1.3s infinite}
   @keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--entourage) 40%,transparent)}50%{box-shadow:0 0 0 8px transparent}}
-  .save{flex:1;height:50px;border:none;border-radius:16px;background:var(--ink);color:var(--paper);font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.06em;cursor:pointer;transition:opacity .2s}
+  .save{flex:1;height:50px;border:none;border-radius:5px;color:#3a2c14;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;cursor:pointer;transition:transform .15s;
+    background:linear-gradient(135deg,#E3C074 0%,var(--or) 45%,var(--or-deep) 100%);
+    box-shadow:0 4px 14px color-mix(in srgb,var(--or-deep) 35%,transparent),inset 0 1px 0 rgba(255,255,255,.4)}
+  .save:active{transform:translateY(1px)}
+  .save:disabled{background:var(--line);color:var(--ink-soft);box-shadow:none;cursor:default}
   .save:disabled{opacity:.4}
 
   .view{display:none}.view.show{display:block}
   .back{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink-soft);cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-bottom:4px}
-  .vtitle{font-family:'Fraunces',serif;font-weight:450;font-size:24px;margin:6px 0 2px}
+  .vtitle{font-family:'Fraunces',serif;font-weight:700;font-size:27px;margin:6px 0 2px;letter-spacing:-.02em}
   .vsub{color:var(--ink-soft);font-size:13.5px;margin-bottom:18px}
 
   .entry{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 16px;margin-bottom:12px;box-shadow:var(--shadow);position:relative}
@@ -141,6 +147,10 @@
   .emeta{margin-top:8px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.02em;color:var(--ink-soft);opacity:.85}
   .voicememo{margin-top:10px;padding:9px 12px;border-radius:11px;background:color-mix(in srgb,var(--entourage) 10%,var(--card));
     border:1px solid color-mix(in srgb,var(--entourage) 28%,var(--line));font-size:13px;color:var(--entourage);cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:.02em}
+  .pactions{display:flex;gap:14px;margin-top:11px;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--line) 55%,transparent)}
+  .pact{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.03em;color:var(--ink-soft);cursor:pointer;transition:color .2s}
+  .pact:active{color:var(--ink)}
+  .pact-detach:active{color:var(--no)}
   .scale-pick{display:flex;gap:8px;margin-bottom:20px}
   .scale-pick button{flex:1;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.04em;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);padding:10px;border-radius:11px;cursor:pointer;transition:all .2s}
   .scale-pick button.on{background:var(--ink);color:var(--paper);border-color:var(--ink)}
@@ -160,7 +170,10 @@
   .confirm-row .yes{background:var(--no);color:#fff;border-color:var(--no)}
   .confirm-row .no{background:var(--card);color:var(--ink)}
 
-  .bigbtn{width:100%;border:1px solid var(--line);border-radius:14px;background:var(--ink);color:var(--paper);font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.04em;padding:14px;cursor:pointer;transition:opacity .2s;text-align:center}
+  .bigbtn{width:100%;border:none;border-radius:5px;color:#3a2c14;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.09em;text-transform:uppercase;font-weight:500;padding:15px;cursor:pointer;transition:transform .15s,box-shadow .2s;text-align:center;
+    background:linear-gradient(135deg,#E3C074 0%,var(--or) 45%,var(--or-deep) 100%);
+    box-shadow:0 4px 14px color-mix(in srgb,var(--or-deep) 35%,transparent),inset 0 1px 0 rgba(255,255,255,.4)}
+  .bigbtn:active{transform:translateY(1px)}
   .bigbtn:active{opacity:.8}
   .ghostbtn{width:100%;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.04em;padding:13px;cursor:pointer;transition:all .2s;text-align:center}
   .ghostbtn:active{background:var(--paper-2)}
@@ -219,7 +232,7 @@
 <div class="app">
   <div class="topbar">
     <span class="clock" id="clock">—</span>
-    <div class="topright"><span class="ver" id="ver">v13</span><div class="lamp" id="lamp">💡</div></div>
+    <div class="topright"><div class="lamp" id="searchbtn" style="font-size:14px">🔍</div><span class="ver" id="ver">v16</span><div class="lamp" id="lamp">💡</div></div>
   </div>
 
   <div class="scroll">
@@ -238,7 +251,7 @@
           <div class="bubble" data-fam="quotidien" style="left:254px;top:92px;width:66px;height:66px;background:color-mix(in srgb,var(--quotidien) 16%,var(--card));border-color:color-mix(in srgb,var(--quotidien) 35%,var(--line))"><span class="ic">◐</span><span class="nm">Quotidien</span><span class="lock">🔒</span></div>
           <div class="bubble" data-fam="entourage" style="left:206px;top:235px;width:68px;height:68px;background:color-mix(in srgb,var(--entourage) 16%,var(--card));border-color:color-mix(in srgb,var(--entourage) 35%,var(--line))"><span class="ic">❀</span><span class="nm">Entourage</span></div>
           <div class="bubble" data-fam="intendance" style="left:60px;top:239px;width:60px;height:60px;background:color-mix(in srgb,var(--intendance) 16%,var(--card));border-color:color-mix(in srgb,var(--intendance) 35%,var(--line))"><span class="ic">▦</span><span class="nm">Radar</span></div>
-          <div class="bubble" data-fam="culture" style="left:14px;top:96px;width:58px;height:58px;background:color-mix(in srgb,var(--culture) 16%,var(--card));border-color:color-mix(in srgb,var(--culture) 35%,var(--line))"><span class="ic">✸</span><span class="nm">Recherche</span></div>
+          <div class="bubble" data-fam="culture" style="left:14px;top:96px;width:58px;height:58px;background:color-mix(in srgb,var(--culture) 16%,var(--card));border-color:color-mix(in srgb,var(--culture) 35%,var(--line))"><span class="ic">✸</span><span class="nm">Culture</span></div>
         </div>
         <div class="hint">Touche le centre pour écrire ou dicter. Tes données vivent sur cet appareil, rien que pour toi.</div>
         <div class="eyebrow">Le murmure du jour</div>
@@ -315,6 +328,41 @@
         <div class="vsub">Retrouve à travers tout : notes, produits, personnes, lieux.</div>
         <div class="searchbar"><span>🔍</span><input id="global-search" placeholder="Paul, L'Olivier, fatigue…" autocomplete="off"></div>
         <div id="search-results"></div>
+      </div>
+    </section>
+
+    <section class="view" data-view="culture">
+      <div class="pad">
+        <div class="back" data-go="home">← accueil</div>
+        <div class="vtitle">Culture & apprentissage</div>
+        <div class="vsub">Tes découvertes notées, tes compétences, tes envies pour un jour.</div>
+        <button class="bigbtn" id="add-culture-btn" style="margin-bottom:12px;background:var(--culture);border-color:var(--culture)">+ Noter une découverte</button>
+        <div style="display:flex;gap:10px;margin-bottom:18px">
+          <button class="ghostbtn" data-go="skills" style="flex:1">🎯 Compétences</button>
+          <button class="ghostbtn" data-go="maybe" style="flex:1">💭 Peut-être un jour</button>
+        </div>
+        <div class="searchbar"><span>🔍</span><input id="culture-search" placeholder="Chercher un film, livre, resto…"></div>
+        <div id="culture-list"></div>
+      </div>
+    </section>
+
+    <section class="view" data-view="skills">
+      <div class="pad">
+        <div class="back" data-go="culture">← culture</div>
+        <div class="vtitle">Compétences</div>
+        <div class="vsub">Ce que tu apprends, suivi en douceur. Pas de pression, juste ta progression.</div>
+        <div id="skills-list"></div>
+        <div style="margin-top:14px"><input class="input" id="new-skill" placeholder="Une compétence (guitare, espagnol…)"><button class="ghostbtn" id="add-skill">+ Ajouter</button></div>
+      </div>
+    </section>
+
+    <section class="view" data-view="maybe">
+      <div class="pad">
+        <div class="back" data-go="culture">← culture</div>
+        <div class="vtitle">Peut-être un jour</div>
+        <div class="vsub">Ta réserve d'envies, sans engagement. Quand tu en réalises une, elle rejoint tes découvertes.</div>
+        <div id="maybe-list"></div>
+        <div style="margin-top:14px"><input class="input" id="new-maybe" placeholder="Un film à voir, un lieu à visiter…"><button class="ghostbtn" id="add-maybe">+ Ajouter à la liste</button></div>
       </div>
     </section>
 
@@ -397,9 +445,9 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION='v13';
+const VERSION='v16';
 const STORE_KEY='compagnon.data.v3';
-const DEFAULT={entries:[],health:{},rituals:[],products:[],people:[],vaultCode:null};
+const DEFAULT={entries:[],health:{},rituals:[],products:[],people:[],culture:[],skills:[],maybe:[],vaultCode:null};
 function loadAll(){
   try{const raw=JSON.parse(localStorage.getItem(STORE_KEY));if(raw)return Object.assign({},DEFAULT,raw);}catch{}
   try{const old=JSON.parse(localStorage.getItem('compagnon.entries.v1'));if(Array.isArray(old))return Object.assign({},DEFAULT,{entries:old});}catch{}
@@ -512,6 +560,9 @@ function go(v){
   if(v==='people')renderPeople();
   if(v==='review')renderReview();
   if(v==='timeline')renderTimeline();
+  if(v==='culture')renderCulture();
+  if(v==='skills')renderSkills();
+  if(v==='maybe')renderMaybe();
   if(v==='search'){renderSearch('');setTimeout(()=>document.getElementById('global-search').focus(),200);}
 }
 document.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.go)));
@@ -519,12 +570,13 @@ document.querySelectorAll('.bubble').forEach(b=>b.addEventListener('click',()=>{
   const f=b.dataset.fam;
   if(f==='quotidien')go('health');
   else if(f==='intendance')go('radar');
-  else if(f==='culture')go('search');
+  else if(f==='culture')go('culture');
   else if(f==='entourage')go('people');
   else if(f==='projets')go('timeline');
   else toast('« '+b.querySelector('.nm').textContent+' » arrive bientôt');
 }));
 document.getElementById('backup-access').addEventListener('click',()=>{go('backup');renderVaultPane();});
+document.getElementById('searchbtn').addEventListener('click',()=>go('search'));
 document.getElementById('vault-toggle').addEventListener('click',openVaultSetup);
 
 const dial=document.getElementById('dial'),core=document.getElementById('core');
@@ -738,6 +790,8 @@ function renderHome(){
   if(DATA.people&&DATA.people.length){
     const toReach=DATA.people.filter(p=>{if(!p.watch)return false;const ls=lastSeen(p.name);const days=ls?(Date.now()-new Date(ls))/86400000:9999;return days>(p.watchDays||90);}).length;
     t+='<div class="pane clickable" data-go="people"><div class="accent" style="background:var(--entourage)"></div><div class="row"><span class="lead"><span class="dot" style="background:var(--entourage)"></span>Entourage</span><span class="meta">'+DATA.people.length+' fiche'+(DATA.people.length>1?'s':'')+(toReach?' · '+toReach+' 🌱':'')+'</span></div></div>';}
+  if(DATA.culture&&DATA.culture.length){
+    t+='<div class="pane clickable" data-go="culture"><div class="accent" style="background:var(--culture)"></div><div class="row"><span class="lead"><span class="dot" style="background:var(--culture)"></span>Culture</span><span class="meta">'+DATA.culture.length+' découverte'+(DATA.culture.length>1?'s':'')+'</span></div></div>';}
   tc.innerHTML=t;
   tc.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.go)));
 
@@ -759,6 +813,7 @@ function allEvents(){
   const ev=[];
   activeEntries().forEach(e=>ev.push({date:e.created,kind:'note',color:'var(--quotidien)',text:e.text.slice(0,90),id:e.id,marked:e.marked,raw:e}));
   (DATA.products||[]).forEach(p=>ev.push({date:p.created,kind:'produit',color:'var(--intendance)',text:(VERDICTS[p.verdict]?VERDICTS[p.verdict][0]+' ':'')+p.name,id:'p'+p.id,marked:p.marked}));
+  (DATA.culture||[]).forEach(c=>{const ty=CULTURE_TYPES[c.type]||CULTURE_TYPES.autre;ev.push({date:c.created,kind:'culture',color:'var(--culture)',text:ty.ico+' '+c.title+' '+starsHTML(c.rating),id:'c'+c.id,marked:c.marked});});
   Object.entries(DATA.health||{}).forEach(([day,h])=>{
     if(h.energy!=null||h.mood)ev.push({date:h.at||day+'T12:00:00Z',kind:'santé',color:'var(--love)',text:'État : '+(h.mood||'')+(h.energy!=null?' énergie '+h.energy+'%':''),id:'h'+day});
   });
@@ -770,6 +825,129 @@ function scaleKey(date,scale){
   if(scale==='year')return ''+d.getFullYear();
   return d.toLocaleDateString('fr-FR',{month:'long',year:'numeric'}); // month
 }
+/* ============================================================
+   CULTURE & APPRENTISSAGE
+   ============================================================ */
+const CULTURE_TYPES={
+  film:{ico:'🎬',label:'Film',crit:['Scénario','Image','Émotion']},
+  livre:{ico:'📖',label:'Livre',crit:['Écriture','Intérêt','Ce qu\'il laisse']},
+  resto:{ico:'🍴',label:'Restaurant',crit:['Cuisine','Ambiance','Rapport qualité/prix']},
+  série:{ico:'📺',label:'Série',crit:['Scénario','Personnages','Rythme']},
+  expo:{ico:'🖼',label:'Expo / sortie',crit:['Intérêt','Émotion']},
+  concert:{ico:'🎵',label:'Concert / spectacle',crit:['Performance','Ambiance']},
+  autre:{ico:'✨',label:'Autre',crit:[]}
+};
+function starsHTML(n,max){max=max||5;let s='';for(let i=1;i<=max;i++)s+='<span style="color:'+(i<=n?'var(--projets)':'var(--line)')+'">★</span>';return s;}
+function renderCulture(filter){
+  const list=document.getElementById('culture-list');
+  let items=(DATA.culture||[]).slice().sort((a,b)=>new Date(b.created)-new Date(a.created));
+  if(filter)items=items.filter(c=>c.title.toLowerCase().includes(filter.toLowerCase()));
+  if(items.length===0){list.innerHTML='<div class="empty">'+(filter?'Aucune découverte trouvée.':'Aucune découverte notée. Touche « Noter une découverte » après un film, un livre, un resto…')+'</div>';return;}
+  list.innerHTML=items.map(c=>{
+    const ty=CULTURE_TYPES[c.type]||CULTURE_TYPES.autre;
+    return '<div class="prod clickable" data-culture="'+c.id+'"><div class="pverdict" style="background:color-mix(in srgb,var(--culture) 18%,var(--card));font-size:18px">'+ty.ico+'</div>'+
+      '<div style="flex:1"><div class="nm">'+esc(c.title)+'</div><div class="meta">'+ty.label+' · '+starsHTML(c.rating)+'</div>'+
+      (c.review?'<div class="note">« '+esc(c.review.slice(0,60))+(c.review.length>60?'…':'')+' »</div>':'')+'</div></div>';
+  }).join('');
+  list.querySelectorAll('[data-culture]').forEach(el=>el.addEventListener('click',()=>openCultureDetail(el.dataset.culture)));
+}
+function openCultureDetail(id){
+  const c=DATA.culture.find(x=>x.id==id);if(!c)return;
+  const ty=CULTURE_TYPES[c.type]||CULTURE_TYPES.autre;
+  openSheet('<h3>'+ty.ico+' '+esc(c.title)+'</h3><div class="sub">'+ty.label+' · noté le '+frDateYear(c.created)+'</div>'+
+    '<div style="font-size:22px;margin-bottom:10px">'+starsHTML(c.rating)+'</div>'+
+    (c.crit&&Object.keys(c.crit).length?'<div class="pane">'+Object.entries(c.crit).map(([k,v])=>'<div class="row" style="padding:5px 0"><span class="lead" style="font-size:14px">'+k+'</span><span class="meta">'+starsHTML(v)+'</span></div>').join('')+'</div>':'')+
+    (c.review?'<div class="eyebrow">Ta critique</div><div class="pane" style="font-size:15px;line-height:1.6">'+esc(c.review)+'</div>':'')+
+    '<div class="sheet-actions"><button class="mic" id="cult-edit">✎</button><button class="mic" id="cult-del" style="color:var(--no)">🗑</button><button class="save" id="cult-close">Fermer</button></div>');
+  document.getElementById('cult-close').addEventListener('click',closeSheet);
+  document.getElementById('cult-edit').addEventListener('click',()=>openCultureSheet(c));
+  document.getElementById('cult-del').addEventListener('click',()=>{
+    if(confirm('Supprimer cette découverte ?')){DATA.culture=DATA.culture.filter(x=>x.id!==c.id);persist();closeSheet();renderCulture();toast('Supprimé');}
+  });
+}
+function openCultureSheet(existing){
+  const c=existing||{type:'film',rating:0,crit:{}};
+  const typeButtons=Object.entries(CULTURE_TYPES).map(([k,t])=>'<button class="modeline-btn'+(c.type===k?' on':'')+'" data-ctype="'+k+'" style="font-family:\'DM Mono\',monospace;font-size:11px;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);padding:7px 11px;border-radius:999px;cursor:pointer;margin:0 6px 6px 0">'+t.ico+' '+t.label+'</button>').join('');
+  openSheet('<h3>'+(existing?'Modifier':'Noter une découverte')+'</h3>'+
+    '<input class="input" id="cs-title" placeholder="Titre" value="'+(c.title?esc(c.title).replace(/"/g,'&quot;'):'')+'">'+
+    '<div style="margin-bottom:12px">'+typeButtons+'</div>'+
+    '<div class="glabel"><span>Note globale</span><span class="v" id="cs-rating-v">'+(c.rating||0)+'/5</span></div>'+
+    '<div id="cs-stars" style="font-size:30px;letter-spacing:4px;margin-bottom:6px"></div>'+
+    '<div id="cs-crit"></div>'+
+    '<div class="eyebrow">Ta critique</div>'+
+    '<textarea class="ta" id="cs-review" placeholder="Ce que tu en as pensé, ce que ça t\'inspire…">'+(c.review?esc(c.review):'')+'</textarea>'+
+    '<button class="save" id="cs-save" style="width:100%;margin-top:12px" disabled>Enregistrer</button>');
+  let type=c.type||'film',rating=c.rating||0,crit=Object.assign({},c.crit||{});
+  const titleEl=document.getElementById('cs-title'),saveBtn=document.getElementById('cs-save');
+  function check(){saveBtn.disabled=!(titleEl.value.trim()&&rating>0);}
+  titleEl.addEventListener('input',check);
+  function drawStars(){
+    const el=document.getElementById('cs-stars');
+    el.innerHTML='';for(let i=1;i<=5;i++){const s=document.createElement('span');s.textContent='★';s.style.cursor='pointer';s.style.color=i<=rating?'var(--projets)':'var(--line)';s.addEventListener('click',()=>{rating=i;document.getElementById('cs-rating-v').textContent=rating+'/5';drawStars();check();});el.appendChild(s);}
+  }
+  drawStars();
+  function drawCrit(){
+    const cd=document.getElementById('cs-crit');const ty=CULTURE_TYPES[type];
+    if(!ty.crit.length){cd.innerHTML='';return;}
+    cd.innerHTML='<div class="eyebrow">Détail (optionnel)</div>'+ty.crit.map(name=>'<div class="glabel" style="margin:8px 0 4px"><span style="font-size:14px">'+name+'</span><span class="crit-stars" data-crit="'+name+'"></span></div>').join('');
+    ty.crit.forEach(name=>{
+      const span=cd.querySelector('[data-crit="'+name+'"]');
+      function draw(){span.innerHTML='';for(let i=1;i<=5;i++){const s=document.createElement('span');s.textContent='★';s.style.cursor='pointer';s.style.fontSize='17px';s.style.color=i<=(crit[name]||0)?'var(--projets)':'var(--line)';s.addEventListener('click',()=>{crit[name]=i;draw();});span.appendChild(s);}}
+      draw();
+    });
+  }
+  drawCrit();
+  document.querySelectorAll('[data-ctype]').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('[data-ctype]').forEach(x=>{x.style.background='var(--card)';x.style.color='var(--ink-soft)';});
+    b.style.background='var(--ink)';b.style.color='var(--paper)';type=b.dataset.ctype;crit={};drawCrit();
+  }));
+  // marquer le type initial
+  const initBtn=document.querySelector('[data-ctype="'+type+'"]');if(initBtn){initBtn.style.background='var(--ink)';initBtn.style.color='var(--paper)';}
+  check();
+  saveBtn.addEventListener('click',()=>{
+    const obj={type,rating,crit,title:titleEl.value.trim(),review:document.getElementById('cs-review').value.trim()};
+    if(existing){Object.assign(existing,obj);}
+    else{obj.id=Date.now();obj.created=new Date().toISOString();DATA.culture.push(obj);}
+    persist();closeSheet();toast(existing?'Découverte mise à jour':'Découverte notée');renderCulture();renderHome();
+  });
+  setTimeout(()=>titleEl.focus(),300);
+}
+document.getElementById('add-culture-btn').addEventListener('click',()=>openCultureSheet(null));
+document.getElementById('culture-search').addEventListener('input',e=>renderCulture(e.target.value));
+
+/* compétences */
+function renderSkills(){
+  const list=document.getElementById('skills-list');
+  if(!DATA.skills||DATA.skills.length===0){list.innerHTML='<div class="empty">Aucune compétence suivie. Ajoute ce que tu apprends.</div>';return;}
+  list.innerHTML=DATA.skills.map(s=>'<div class="pane"><div class="row"><span class="lead" style="font-size:16px">'+esc(s.name)+'</span><span class="rdel" data-sdel="'+s.id+'" style="cursor:pointer;opacity:.5">✕</span></div>'+
+    '<div class="glabel" style="margin:10px 0 6px"><span style="font-size:13px;color:var(--ink-soft)">Progression</span><span class="v">'+(s.level||0)+'%</span></div>'+
+    '<input type="range" min="0" max="100" step="5" class="slider" value="'+(s.level||0)+'" data-slvl="'+s.id+'"></div>').join('');
+  list.querySelectorAll('[data-slvl]').forEach(sl=>sl.addEventListener('input',()=>{
+    const s=DATA.skills.find(x=>x.id==sl.dataset.slvl);s.level=+sl.value;sl.previousElementSibling.querySelector('.v').textContent=sl.value+'%';persist();
+  }));
+  list.querySelectorAll('[data-sdel]').forEach(x=>x.addEventListener('click',()=>{DATA.skills=DATA.skills.filter(s=>s.id!=x.dataset.sdel);persist();renderSkills();toast('Retiré');}));
+}
+document.getElementById('add-skill').addEventListener('click',()=>{
+  const inp=document.getElementById('new-skill'),v=inp.value.trim();if(!v)return;
+  DATA.skills.push({id:Date.now(),name:v,level:0});persist();inp.value='';renderSkills();toast('Compétence ajoutée');
+});
+
+/* peut-être un jour */
+function renderMaybe(){
+  const list=document.getElementById('maybe-list');
+  if(!DATA.maybe||DATA.maybe.length===0){list.innerHTML='<div class="empty">Ta réserve d\'envies est vide. Ajoute ce que tu veux faire un jour.</div>';return;}
+  list.innerHTML=DATA.maybe.map(mb=>'<div class="ritual"><div class="rname">💭 '+esc(mb.text)+'</div><div class="rtrend" style="cursor:pointer;color:var(--culture)" data-done="'+mb.id+'">réalisé →</div><div class="rdel" data-mdel="'+mb.id+'">✕</div></div>').join('');
+  list.querySelectorAll('[data-mdel]').forEach(x=>x.addEventListener('click',()=>{DATA.maybe=DATA.maybe.filter(m=>m.id!=x.dataset.mdel);persist();renderMaybe();toast('Retiré');}));
+  list.querySelectorAll('[data-done]').forEach(x=>x.addEventListener('click',()=>{
+    const mb=DATA.maybe.find(m=>m.id==x.dataset.done);DATA.maybe=DATA.maybe.filter(m=>m.id!=x.dataset.done);persist();
+    openCultureSheet({type:'autre',rating:0,crit:{},title:mb.text});renderMaybe();
+  }));
+}
+document.getElementById('add-maybe').addEventListener('click',()=>{
+  const inp=document.getElementById('new-maybe'),v=inp.value.trim();if(!v)return;
+  DATA.maybe.push({id:Date.now(),text:v});persist();inp.value='';renderMaybe();toast('Ajouté à ta liste');
+});
+
 function renderTimeline(){
   const body=document.getElementById('timeline-body');
   const events=allEvents();
@@ -990,9 +1168,13 @@ document.getElementById('global-search').addEventListener('input',e=>renderSearc
 let currentPersonId=null;
 
 function personEntries(name){
-  // les notes du journal qui mentionnent cette personne
+  // les notes du journal qui mentionnent cette personne, sauf celles détachées manuellement
   const tag='Personne:'+name[0].toUpperCase()+name.slice(1);
-  return DATA.entries.filter(e=>e.tags.includes(tag)||new RegExp('\\b'+name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i').test(e.text));
+  const low=name.toLowerCase();
+  return DATA.entries.filter(e=>{
+    if(e.detachedFrom&&e.detachedFrom.some(n=>n.toLowerCase()===low))return false;
+    return e.tags.includes(tag)||new RegExp('\\b'+name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i').test(e.text);
+  });
 }
 function lastSeen(name){
   const es=personEntries(name);
@@ -1095,11 +1277,36 @@ function openPerson(id){
     (p.topics?'<div class="eyebrow">Sujets abordés</div><div class="pane">'+esc(p.topics)+'</div>':'')+
     (p.gifts?'<div class="eyebrow">Idées de cadeaux</div><div class="pane">🎁 '+esc(p.gifts)+'</div>':'')+
     '<div class="eyebrow">Vécu ensemble ('+es.length+')</div>'+
-    (es.length?es.map(entryHTML).join(''):'<div class="empty">Aucune note ne mentionne '+esc(p.name)+' encore. Écris « '+esc(p.name)+' » dans ton journal et ça apparaîtra ici.</div>');
+    (es.length?es.map(e=>personEntryHTML(e,p.name)).join(''):'<div class="empty">Aucune note ne mentionne '+esc(p.name)+' encore. Écris « '+esc(p.name)+' » dans ton journal et ça apparaîtra ici.</div>');
   wireEntries(body);
+  // actions spécifiques fiche : corriger une mention, détacher
+  body.querySelectorAll('[data-pcorrect]').forEach(x=>x.addEventListener('click',ev=>{
+    ev.stopPropagation();openAdditionSheet(x.dataset.pcorrect);
+  }));
+  body.querySelectorAll('[data-pdetach]').forEach(x=>x.addEventListener('click',ev=>{
+    ev.stopPropagation();
+    const e=DATA.entries.find(en=>en.id==x.dataset.pdetach);
+    if(e){
+      if(!confirm('Détacher cette note de la fiche de '+p.name+' ? La note reste dans ton journal, mais ne sera plus reliée à cette personne.'))return;
+      e.detachedFrom=e.detachedFrom||[];
+      if(!e.detachedFrom.includes(p.name))e.detachedFrom.push(p.name);
+      persist();toast('Note détachée de '+p.name);openPerson(p.id);
+    }
+  }));
   body.querySelector('[data-edit-person]').addEventListener('click',()=>openPersonSheet(p));
   document.querySelectorAll('.view').forEach(s=>s.classList.toggle('show',s.dataset.view==='person'));
   document.querySelector('.scroll').scrollTo({top:0,behavior:'smooth'});
+}
+// affichage d'une entrée dans une fiche, avec actions "corriger" et "détacher"
+function personEntryHTML(e,personName){
+  return '<div class="entry" style="position:relative">'+
+    '<div class="etime">🕓 '+stamp(e.created)+(e.additions&&e.additions.length?' · modifié':'')+'</div>'+
+    '<div class="etext">'+highlight(e.text,e.tags)+'</div>'+
+    (e.place?'<div class="emeta">📍 '+esc(e.place)+'</div>':'')+
+    ((e.additions||[]).map(a=>'<div class="addition"><div class="ahead"><span>✎ ajout du '+frDate(a.created)+'</span></div><div class="atext">'+esc(a.text)+'</div></div>').join(''))+
+    '<div class="pactions"><span class="pact" data-pcorrect="'+e.id+'">✎ corriger</span>'+
+    '<span class="pact pact-detach" data-pdetach="'+e.id+'">⊘ pas '+esc(personName)+'</span></div>'+
+    '</div>';
 }
 
 function openPersonSheet(existing){
@@ -1396,7 +1603,7 @@ document.getElementById('do-dayone').addEventListener('change',ev=>{
 });
 tick();setInterval(tick,10000);
 const lamp=document.getElementById('lamp');
-function applyTheme(night){document.body.classList.toggle('night',night);lamp.textContent=night?'🌙':'💡';document.querySelector('meta[name=theme-color]').setAttribute('content',night?'#21201C':'#F3EEE3');}
+function applyTheme(night){document.body.classList.toggle('night',night);lamp.textContent=night?'🌙':'💡';document.querySelector('meta[name=theme-color]').setAttribute('content',night?'#243831':'#DCE8E0');}
 const hNow=new Date().getHours();
 applyTheme(localStorage.getItem('compagnon.theme')?localStorage.getItem('compagnon.theme')==='night':(hNow>=20||hNow<7));
 lamp.addEventListener('click',()=>{const n=!document.body.classList.contains('night');applyTheme(n);localStorage.setItem('compagnon.theme',n?'night':'day');});
