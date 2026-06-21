@@ -48,6 +48,8 @@
     border-bottom:1px solid color-mix(in srgb,var(--line) 55%,transparent); transition:background .8s;
   }
   .clock{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.04em;color:var(--ink-soft)}
+  .ver{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--ink-soft);
+    border:1px solid var(--line);border-radius:999px;padding:3px 8px;background:var(--card);opacity:.8}
   .lamp{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--card);
     cursor:pointer;display:grid;place-items:center;font-size:15px;transition:transform .3s}
   .lamp:active{transform:scale(.9)}
@@ -160,6 +162,11 @@
   .del{position:absolute;top:13px;right:14px;font-size:13px;color:var(--ink-soft);cursor:pointer;opacity:.5}
   .del:hover{opacity:1}
 
+  .bigbtn{width:100%;border:1px solid var(--line);border-radius:14px;background:var(--ink);color:var(--paper);
+    font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.04em;padding:14px;cursor:pointer;
+    transition:opacity .2s;text-align:center}
+  .bigbtn:active{opacity:.8}
+
   .toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);
     background:var(--ink);color:var(--paper);padding:11px 18px;border-radius:999px;font-size:13.5px;
     box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:all .35s;z-index:60;
@@ -171,7 +178,10 @@
 <div class="app">
   <div class="topbar">
     <span class="clock" id="clock">—</span>
-    <div class="lamp" id="lamp">💡</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="ver" id="ver">v2</span>
+      <div class="lamp" id="lamp">💡</div>
+    </div>
   </div>
 
   <div class="scroll">
@@ -204,6 +214,12 @@
 
         <div class="eyebrow">Tes dernières notes</div>
         <div id="recent"></div>
+
+        <div class="eyebrow">Tes données</div>
+        <div class="pane" id="backup-access" style="cursor:pointer">
+          <div class="accent" style="background:var(--vault)"></div>
+          <div class="row"><span class="lead"><span class="dot" style="background:var(--vault)"></span>Sauvegarder ou restaurer</span><span class="meta">à toi seul →</span></div>
+        </div>
       </div>
     </section>
 
@@ -214,6 +230,37 @@
         <div class="vtitle">Journal</div>
         <div class="vsub" id="jcount">Tout ce que tu as déposé, dans l'ordre du temps.</div>
         <div id="jlist"></div>
+      </div>
+    </section>
+
+    <!-- ===== TES DONNÉES ===== -->
+    <section class="view" data-view="backup">
+      <div class="pad">
+        <div class="back" data-go="home">← accueil</div>
+        <div class="vtitle">Tes données</div>
+        <div class="vsub">Tout ce que tu déposes vit sur cet appareil, rien que pour toi. Ici, tu peux en faire une copie de secours, ou la remettre.</div>
+
+        <div class="pane" style="margin-bottom:14px">
+          <div class="accent" style="background:var(--quotidien)"></div>
+          <div style="font-family:'Fraunces',serif;font-size:17px;margin-bottom:5px">Faire une sauvegarde</div>
+          <div style="color:var(--ink-soft);font-size:14px;line-height:1.5;margin-bottom:13px">Télécharge un fichier avec tout ton journal. Garde-le où tu veux : Fichiers, iCloud, ou envoie-le-toi par mail. C'est ta copie, à toi.</div>
+          <button class="bigbtn" id="do-export">↓ Sauvegarder mes données</button>
+          <div id="export-info" style="font-size:13px;color:var(--ink-soft);margin-top:9px;text-align:center"></div>
+        </div>
+
+        <div class="pane">
+          <div class="accent" style="background:var(--entourage)"></div>
+          <div style="font-family:'Fraunces',serif;font-size:17px;margin-bottom:5px">Restaurer une sauvegarde</div>
+          <div style="color:var(--ink-soft);font-size:14px;line-height:1.5;margin-bottom:13px">Tu as changé de téléphone, ou tu veux remettre une copie ? Choisis ton fichier de sauvegarde. Tes notes actuelles seront remplacées par celles du fichier.</div>
+          <label class="bigbtn" style="display:block;text-align:center">↑ Choisir un fichier
+            <input type="file" id="do-import" accept=".json,application/json" style="display:none">
+          </label>
+          <div id="import-info" style="font-size:13px;color:var(--ink-soft);margin-top:9px;text-align:center"></div>
+        </div>
+
+        <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin-top:18px;text-align:center;font-style:italic">
+          Conseil : fais une sauvegarde de temps en temps, surtout avant de changer de téléphone.
+        </div>
       </div>
     </section>
 
@@ -250,6 +297,7 @@
 
 <script>
 /* ===================== DONNÉES (persistance réelle) ===================== */
+const VERSION='v2';
 const DB_KEY='compagnon.entries.v1';
 function load(){try{return JSON.parse(localStorage.getItem(DB_KEY))||[]}catch{return[]}}
 function save(arr){localStorage.setItem(DB_KEY,JSON.stringify(arr))}
@@ -482,7 +530,63 @@ lamp.addEventListener('click',()=>{const n=!document.body.classList.contains('ni
 let tt;const toastEl=document.getElementById('toast');
 function toast(m){toastEl.textContent=m;toastEl.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>toastEl.classList.remove('show'),2000);}
 
+/* ===================== SAUVEGARDE / RESTAURATION ===================== */
+document.getElementById('backup-access').addEventListener('click',()=>go('backup'));
+
+// EXPORT : télécharge un fichier avec tout le journal
+document.getElementById('do-export').addEventListener('click',()=>{
+  const payload={
+    app:'Compagnon', version:VERSION,
+    exportedAt:new Date().toISOString(),
+    entries:entries
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const d=new Date();
+  const stamp=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const a=document.createElement('a');
+  a.href=url; a.download='compagnon-sauvegarde-'+stamp+'.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  document.getElementById('export-info').textContent='✓ Sauvegarde créée : '+entries.length+' '+(entries.length>1?'entrées':'entrée')+'. Range bien ce fichier.';
+  toast('Sauvegarde téléchargée');
+});
+
+// IMPORT : restaure depuis un fichier
+document.getElementById('do-import').addEventListener('change',(ev)=>{
+  const file=ev.target.files[0]; if(!file)return;
+  const info=document.getElementById('import-info');
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      const imported = Array.isArray(data) ? data : data.entries;
+      if(!Array.isArray(imported)) throw new Error('format');
+      // validation légère
+      const clean=imported.filter(e=>e&&e.text&&e.created).map(e=>({
+        id:e.id||Date.now()+Math.random(),
+        text:String(e.text),
+        created:e.created,
+        tags:Array.isArray(e.tags)?e.tags:analyze(String(e.text))
+      }));
+      if(clean.length===0){info.textContent='Ce fichier ne contient aucune note lisible.';return;}
+      const ok=confirm('Restaurer '+clean.length+' entrée(s) ? Tes notes actuelles ('+entries.length+') seront remplacées.');
+      if(!ok){info.textContent='Restauration annulée.';ev.target.value='';return;}
+      entries=clean.sort((a,b)=>new Date(b.created)-new Date(a.created));
+      save(entries);
+      info.textContent='✓ '+clean.length+' entrée(s) restaurée(s).';
+      toast('Données restaurées');
+      renderHome();
+    }catch(err){
+      info.textContent='Fichier non reconnu. Choisis bien un fichier de sauvegarde Compagnon (.json).';
+    }
+    ev.target.value='';
+  };
+  reader.readAsText(file);
+});
+
 /* ===================== INIT ===================== */
+document.getElementById('ver').textContent=VERSION;
 renderHome();
 
 /* ===================== APP INSTALLABLE + STOCKAGE DURABLE ===================== */
