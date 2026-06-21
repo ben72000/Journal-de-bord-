@@ -130,6 +130,18 @@
   .chipthread{font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:var(--paper);display:flex;align-items:center;gap:5px;cursor:pointer}
   .del{position:absolute;top:13px;right:14px;font-size:13px;color:var(--ink-soft);cursor:pointer;opacity:.5}
   .del:hover{opacity:1}
+  .edit{position:absolute;top:13px;right:40px;font-size:13px;color:var(--ink-soft);cursor:pointer;opacity:.5}
+  .edit:hover{opacity:1}
+  .addition{margin-top:11px;padding:10px 13px;border-left:2px solid var(--quotidien);
+    background:color-mix(in srgb,var(--quotidien) 7%,var(--card));border-radius:0 10px 10px 0}
+  .addition .ahead{font-family:'DM Mono',monospace;font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--quotidien);margin-bottom:4px;display:flex;align-items:center;justify-content:space-between}
+  .addition .atext{font-size:15px;line-height:1.55}
+  .addition .adel{cursor:pointer;opacity:.5;font-size:11px}
+  .addition .adel:hover{opacity:1}
+  .confirm-row{display:flex;gap:8px;margin-top:10px}
+  .confirm-row button{flex:1;border-radius:11px;padding:9px;font-family:'DM Mono',monospace;font-size:11.5px;letter-spacing:.04em;cursor:pointer;border:1px solid var(--line)}
+  .confirm-row .yes{background:var(--no);color:#fff;border-color:var(--no)}
+  .confirm-row .no{background:var(--card);color:var(--ink)}
 
   .bigbtn{width:100%;border:1px solid var(--line);border-radius:14px;background:var(--ink);color:var(--paper);font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.04em;padding:14px;cursor:pointer;transition:opacity .2s;text-align:center}
   .bigbtn:active{opacity:.8}
@@ -190,7 +202,7 @@
 <div class="app">
   <div class="topbar">
     <span class="clock" id="clock">—</span>
-    <div class="topright"><span class="ver" id="ver">v5</span><div class="lamp" id="lamp">💡</div></div>
+    <div class="topright"><span class="ver" id="ver">v9</span><div class="lamp" id="lamp">💡</div></div>
   </div>
 
   <div class="scroll">
@@ -303,6 +315,14 @@
         <div class="back" data-go="home">← accueil</div>
         <div class="vtitle">Tes données</div>
         <div class="vsub">Tout ce que tu déposes vit sur cet appareil, rien que pour toi. Ici, tu peux en faire une copie de secours, ou la remettre.</div>
+
+        <div class="pane" id="vault-pane" style="margin-bottom:14px">
+          <div class="accent" style="background:var(--vault)"></div>
+          <div style="font-family:'Fraunces',serif;font-size:17px;margin-bottom:5px">🔒 Le coffre</div>
+          <div style="color:var(--ink-soft);font-size:14px;line-height:1.5;margin-bottom:13px" id="vault-desc">Protège ton journal, ta santé et ton entourage par un code. À l'ouverture de l'app, ils resteront fermés jusqu'à ce que tu entres ton code.</div>
+          <button class="bigbtn" id="vault-toggle" style="background:var(--vault);border-color:var(--vault)">Activer le coffre</button>
+          <div style="font-size:12px;color:var(--ink-soft);margin-top:8px;font-style:italic;line-height:1.45">Ce code protège d'un regard indiscret sur ton téléphone. Garde-le en tête : sans lui, plus d'accès à ces espaces.</div>
+        </div>
         <div class="pane" style="margin-bottom:14px">
           <div class="accent" style="background:var(--quotidien)"></div>
           <div style="font-family:'Fraunces',serif;font-size:17px;margin-bottom:5px">Faire une sauvegarde</div>
@@ -317,6 +337,15 @@
           <label class="bigbtn" style="display:block">↑ Choisir un fichier<input type="file" id="do-import" accept=".json,application/json" style="display:none"></label>
           <div id="import-info" style="font-size:13px;color:var(--ink-soft);margin-top:9px;text-align:center"></div>
         </div>
+
+        <div class="pane" style="margin-top:14px">
+          <div class="accent" style="background:var(--culture)"></div>
+          <div style="font-family:'Fraunces',serif;font-size:17px;margin-bottom:5px">Importer depuis Day One</div>
+          <div style="color:var(--ink-soft);font-size:14px;line-height:1.5;margin-bottom:13px">Tu as un journal Day One ? Exporte-le en <b>JSON</b> (Réglages → Export → JSON), décompresse le .zip, et choisis le fichier <b>Journal.json</b>. Toutes tes entrées arrivent ici avec leur date d'origine, et s'ajoutent à ton journal.</div>
+          <label class="bigbtn" style="display:block;background:var(--culture);border-color:var(--culture)">↑ Choisir mon Journal.json<input type="file" id="do-dayone" accept=".json,application/json" style="display:none"></label>
+          <div id="dayone-info" style="font-size:13px;color:var(--ink-soft);margin-top:9px;text-align:center"></div>
+          <div style="font-size:12px;color:var(--ink-soft);margin-top:8px;font-style:italic;line-height:1.45">Note : le texte et les dates sont importés. Les photos Day One ne le sont pas encore.</div>
+        </div>
         <div style="font-size:12.5px;color:var(--ink-soft);line-height:1.5;margin-top:18px;text-align:center;font-style:italic">Conseil : fais une sauvegarde de temps en temps, surtout avant de changer de téléphone.</div>
       </div>
     </section>
@@ -328,7 +357,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION='v5';
+const VERSION='v9';
 const STORE_KEY='compagnon.data.v3';
 const DEFAULT={entries:[],health:{},rituals:[],products:[],people:[],vaultCode:null};
 function loadAll(){
@@ -378,7 +407,7 @@ function relative(iso){
   return frDate(iso);
 }
 
-const VAULT_VIEWS=['health','rituals'];
+const VAULT_VIEWS=['health','rituals','people','person','journal'];
 let vaultUnlocked=false,pendingVaultView=null;
 function go(v){
   if(VAULT_VIEWS.includes(v)&&DATA.vaultCode&&!vaultUnlocked){pendingVaultView=v;openVaultGate();return;}
@@ -401,7 +430,8 @@ document.querySelectorAll('.bubble').forEach(b=>b.addEventListener('click',()=>{
   else if(f==='entourage')go('people');
   else toast('« '+b.querySelector('.nm').textContent+' » arrive bientôt');
 }));
-document.getElementById('backup-access').addEventListener('click',()=>go('backup'));
+document.getElementById('backup-access').addEventListener('click',()=>{go('backup');renderVaultPane();});
+document.getElementById('vault-toggle').addEventListener('click',openVaultSetup);
 
 const dial=document.getElementById('dial'),core=document.getElementById('core');
 let dialOpen=false;
@@ -439,12 +469,26 @@ function startRec(ta,saveBtn,mic){
   if(recording||!ta)return;
   if(!SR){toast('La dictée n\'est pas dispo sur ce navigateur');return;}
   recog=new SR();recog.lang='fr-FR';recog.continuous=true;recog.interimResults=true;
-  let base=ta.value?ta.value+' ':'';
-  recog.onresult=e=>{let t='';for(let i=e.resultIndex;i<e.results.length;i++)t+=e.results[i][0].transcript;ta.value=base+t;if(saveBtn)saveBtn.disabled=!ta.value.trim();};
-  recog.onend=()=>{if(recording){base=ta.value+' ';try{recog.start()}catch{}}};
+  // 'committed' = tout le texte déjà confirmé (ce qui était dans la zone + les phrases finalisées)
+  let committed=ta.value?ta.value.replace(/\s+$/,'')+' ':'';
+  recog.onresult=e=>{
+    let finalChunk='', interim='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      const r=e.results[i];
+      if(r.isFinal) finalChunk+=r[0].transcript;
+      else interim+=r[0].transcript;
+    }
+    // on fige les segments finaux dans committed, et on affiche l'interim par-dessus
+    if(finalChunk) committed=(committed+finalChunk).replace(/\s+/g,' ').replace(/\s+$/,'')+' ';
+    ta.value=(committed+interim).replace(/\s+$/,interim?'':' ').trimStart();
+    if(saveBtn)saveBtn.disabled=!ta.value.trim();
+  };
+  // quand la session se coupe seule, on relance SANS toucher au texte (committed est déjà à jour)
+  recog.onend=()=>{ if(recording){ try{recog.start()}catch{} } };
   try{recog.start();recording=true;if(mic)mic.classList.add('rec');}catch{}
 }
 function stopRec(){recording=false;document.querySelectorAll('.mic.rec').forEach(m=>m.classList.remove('rec'));if(recog){try{recog.stop()}catch{}recog=null;}}
+
 
 function highlight(text,tags){
   let html=text.replace(/&/g,'&amp;').replace(/</g,'&lt;');
@@ -458,15 +502,45 @@ function highlight(text,tags){
 function entryHTML(e){
   const chips=e.tags.map(t=>{const label=t.includes(':')?t.split(':')[1]:t;
     return '<span class="chipthread" data-cross="'+t+'"><span class="dot" style="background:'+tagColor(t)+'"></span>'+label+'</span>';}).join('');
-  return '<div class="entry" data-id="'+e.id+'"><div class="del" data-del="'+e.id+'">✕</div>'+
-    '<div class="etime">🕓 '+relative(e.created)+' · '+frTime(e.created)+'</div>'+
+  const adds=(e.additions||[]).map(a=>
+    '<div class="addition"><div class="ahead"><span>✎ ajout du '+frDate(a.created)+' · '+frTime(a.created)+'</span><span class="adel" data-adel="'+e.id+'|'+a.id+'">retirer</span></div>'+
+    '<div class="atext">'+esc(a.text)+'</div></div>'
+  ).join('');
+  return '<div class="entry" data-id="'+e.id+'">'+
+    '<div class="del" data-del="'+e.id+'">✕</div>'+
+    '<div class="edit" data-edit="'+e.id+'">✎</div>'+
+    '<div class="etime">🕓 '+relative(e.created)+' · '+frTime(e.created)+(e.additions&&e.additions.length?' · modifié':'')+'</div>'+
     '<div class="etext">'+highlight(e.text,e.tags)+'</div>'+
-    (chips?'<div class="threads">'+chips+'</div>':'')+'</div>';
+    (chips?'<div class="threads">'+chips+'</div>':'')+
+    adds+'</div>';
 }
 function wireEntries(scope){
+  // suppression AVEC confirmation
   scope.querySelectorAll('[data-del]').forEach(x=>x.addEventListener('click',ev=>{
-    ev.stopPropagation();DATA.entries=DATA.entries.filter(e=>e.id!=x.dataset.del);persist();
-    renderHome();renderJournal();toast('Entrée retirée');
+    ev.stopPropagation();
+    const entry=x.closest('.entry');
+    if(entry.querySelector('.confirm-row'))return; // déjà en confirmation
+    const bar=document.createElement('div');
+    bar.className='confirm-row';
+    bar.innerHTML='<button class="no" data-cancel>Annuler</button><button class="yes" data-confirm="'+x.dataset.del+'">Supprimer</button>';
+    entry.appendChild(bar);
+    bar.querySelector('[data-cancel]').addEventListener('click',e2=>{e2.stopPropagation();bar.remove();});
+    bar.querySelector('[data-confirm]').addEventListener('click',e2=>{
+      e2.stopPropagation();
+      DATA.entries=DATA.entries.filter(en=>en.id!=x.dataset.del);persist();
+      renderHome();renderJournal();toast('Entrée supprimée');
+    });
+  }));
+  // édition = ajout rattaché
+  scope.querySelectorAll('[data-edit]').forEach(x=>x.addEventListener('click',ev=>{
+    ev.stopPropagation();openAdditionSheet(x.dataset.edit);
+  }));
+  // retirer une annotation
+  scope.querySelectorAll('[data-adel]').forEach(x=>x.addEventListener('click',ev=>{
+    ev.stopPropagation();
+    const [eid,aid]=x.dataset.adel.split('|');
+    const entry=DATA.entries.find(en=>en.id==eid);
+    if(entry){entry.additions=(entry.additions||[]).filter(a=>a.id!=aid);persist();renderHome();renderJournal();toast('Ajout retiré');}
   }));
   scope.querySelectorAll('[data-cross]').forEach(x=>x.addEventListener('click',ev=>{
     ev.stopPropagation();
@@ -478,6 +552,26 @@ function wireEntries(scope){
     }
     openCross(tag);
   }));
+}
+function openAdditionSheet(entryId){
+  const entry=DATA.entries.find(e=>e.id==entryId);if(!entry)return;
+  openSheet(
+    '<h3>Ajouter à cette note</h3>'+
+    '<div class="sub">Ta note d\'origine reste intacte. Ceci s\'ajoute en dessous, daté, comme une annotation en marge.</div>'+
+    '<div class="pane" style="margin-bottom:14px"><div class="etext" style="font-size:15px;color:var(--ink-soft)">'+esc(entry.text)+'</div></div>'+
+    '<textarea class="ta" id="add-text" placeholder="Ton ajout, ta correction, ta pensée du moment…"></textarea>'+
+    '<div class="sheet-actions"><div class="mic" id="add-mic">🎙️</div><button class="save" id="add-save" disabled>Ajouter</button></div>'
+  );
+  const ta=document.getElementById('add-text'),sv=document.getElementById('add-save'),mic=document.getElementById('add-mic');
+  ta.addEventListener('input',()=>sv.disabled=!ta.value.trim());
+  mic.addEventListener('click',()=>recording?stopRec():startRec(ta,sv,mic));
+  sv.addEventListener('click',()=>{
+    const txt=ta.value.trim();if(!txt)return;
+    entry.additions=entry.additions||[];
+    entry.additions.push({id:Date.now(),text:txt,created:new Date().toISOString()});
+    persist();closeSheet();toast('Ajout rattaché à ta note');renderHome();renderJournal();
+  });
+  setTimeout(()=>ta.focus(),300);
 }
 
 function renderHome(){
@@ -633,7 +727,7 @@ document.getElementById('radar-search').addEventListener('input',e=>renderRadar(
 function renderSearch(q){
   const box=document.getElementById('search-results');q=q.trim().toLowerCase();
   if(!q){box.innerHTML='<div class="empty">Tape un mot pour chercher dans tout : notes, produits, personnes, lieux.</div>';return;}
-  const noteHits=DATA.entries.filter(e=>e.text.toLowerCase().includes(q)||e.tags.some(t=>t.toLowerCase().includes(q)));
+  const noteHits=DATA.entries.filter(e=>e.text.toLowerCase().includes(q)||e.tags.some(t=>t.toLowerCase().includes(q))||(e.additions||[]).some(a=>a.text.toLowerCase().includes(q)));
   const prodHits=DATA.products.filter(p=>p.name.toLowerCase().includes(q)||(p.note||'').toLowerCase().includes(q));
   let html='';
   if(noteHits.length)html+='<div class="eyebrow">Notes ('+noteHits.length+')</div>'+noteHits.map(entryHTML).join('');
@@ -659,28 +753,61 @@ function lastSeen(name){
   return es.length?es[0].created:null;
 }
 
+function suggestedPeople(){
+  // compte les prénoms mentionnés dans les notes qui n'ont pas encore de fiche
+  const counts={};
+  const existing=new Set((DATA.people||[]).map(p=>p.name.toLowerCase()));
+  DATA.entries.forEach(e=>{
+    e.tags.forEach(t=>{
+      if(t.startsWith('Personne:')){
+        const name=t.split(':')[1];
+        if(!existing.has(name.toLowerCase())){
+          counts[name]=counts[name]||{name,count:0,first:e.created,last:e.created};
+          counts[name].count++;
+          if(new Date(e.created)<new Date(counts[name].first))counts[name].first=e.created;
+          if(new Date(e.created)>new Date(counts[name].last))counts[name].last=e.created;
+        }
+      }
+    });
+  });
+  return Object.values(counts).sort((a,b)=>b.count-a.count);
+}
 function renderPeople(){
   const list=document.getElementById('people-list');
-  if(!DATA.people||DATA.people.length===0){
-    list.innerHTML='<div class="empty">Personne pour l\'instant. Ajoute les gens qui comptent — l\'app reliera ensuite tes notes à eux.</div>';
-    return;
+  // suggestions : noms fréquents sans fiche
+  const sugg=suggestedPeople();
+  let suggHTML='';
+  if(sugg.length){
+    suggHTML='<div class="eyebrow">Noms repérés dans tes notes</div>'+
+      '<div style="font-size:13px;color:var(--ink-soft);margin-bottom:12px;line-height:1.45">Ces prénoms reviennent dans ton journal. Touche un nom pour créer sa fiche d\'un geste.</div>'+
+      sugg.map(s=>'<div class="prod"><div class="pverdict" style="background:color-mix(in srgb,var(--culture) 18%,var(--card));color:var(--culture);font-family:\'Fraunces\',serif">'+s.name[0].toUpperCase()+'</div>'+
+        '<div style="flex:1"><div class="nm">'+esc(s.name)+'</div><div class="meta">'+s.count+' mention'+(s.count>1?'s':'')+' · depuis '+frDate(s.first)+'</div></div>'+
+        '<button class="ghostbtn" data-make="'+esc(s.name)+'" style="width:auto;padding:8px 13px">+ fiche</button></div>').join('');
   }
-  const sorted=DATA.people.slice().sort((a,b)=>a.name.localeCompare(b.name));
-  list.innerHTML=sorted.map(p=>{
-    const ls=lastSeen(p.name);
-    const initial=p.name[0].toUpperCase();
-    let alert='';
-    if(p.watch){
-      const days=ls?(Date.now()-new Date(ls))/86400000:9999;
-      const limit=p.watchDays||90;
-      if(days>limit)alert='<span class="meta" style="color:var(--entourage)">🌱 à recontacter</span>';
-    }
-    return '<div class="prod clickable" data-person="'+p.id+'">'+
-      '<div class="pverdict" style="background:color-mix(in srgb,var(--entourage) 20%,var(--card));color:var(--entourage);font-family:\'Fraunces\',serif">'+initial+'</div>'+
-      '<div style="flex:1"><div class="nm">'+esc(p.name)+'</div><div class="meta">'+(p.context?esc(p.context):(ls?'vu '+relative(ls):'pas encore de note'))+'</div></div>'+
-      alert+'</div>';
-  }).join('');
+  // liste des fiches existantes
+  let listHTML='';
+  if(!DATA.people||DATA.people.length===0){
+    listHTML='<div class="empty">'+(sugg.length?'Aucune fiche encore. Crée-en depuis les noms repérés ci-dessus, ou avec le bouton.':'Personne pour l\'instant. Ajoute les gens qui comptent — l\'app reliera ensuite tes notes à eux.')+'</div>';
+  }else{
+    const sorted=DATA.people.slice().sort((a,b)=>a.name.localeCompare(b.name));
+    listHTML='<div class="eyebrow">Tes fiches ('+DATA.people.length+')</div>'+sorted.map(p=>{
+      const ls=lastSeen(p.name);
+      const initial=p.name[0].toUpperCase();
+      let alert='';
+      if(p.watch){const days=ls?(Date.now()-new Date(ls))/86400000:9999;if(days>(p.watchDays||90))alert='<span class="meta" style="color:var(--entourage)">🌱 à recontacter</span>';}
+      return '<div class="prod clickable" data-person="'+p.id+'">'+
+        '<div class="pverdict" style="background:color-mix(in srgb,var(--entourage) 20%,var(--card));color:var(--entourage);font-family:\'Fraunces\',serif">'+initial+'</div>'+
+        '<div style="flex:1"><div class="nm">'+esc(p.name)+'</div><div class="meta">'+(p.context?esc(p.context):(ls?'vu '+relative(ls):'pas encore de note'))+'</div></div>'+
+        alert+'</div>';
+    }).join('');
+  }
+  list.innerHTML=suggHTML+listHTML;
   list.querySelectorAll('[data-person]').forEach(el=>el.addEventListener('click',()=>openPerson(el.dataset.person)));
+  list.querySelectorAll('[data-make]').forEach(el=>el.addEventListener('click',()=>{
+    const name=el.dataset.make;
+    DATA.people.push({id:Date.now(),name,context:'',interests:'',topics:'',gifts:'',watch:false,watchDays:90});
+    persist();toast('Fiche de '+name+' créée');renderPeople();renderHome();
+  }));
 }
 
 function openPerson(id){
@@ -771,6 +898,63 @@ function openVaultGate(){
   inp.addEventListener('keydown',e=>{if(e.key==='Enter')tryVault();});
 }
 
+/* gestion du code depuis Tes données */
+function renderVaultPane(){
+  const desc=document.getElementById('vault-desc'),btn=document.getElementById('vault-toggle');
+  if(!desc||!btn)return;
+  if(DATA.vaultCode){
+    desc.innerHTML='Le coffre est <b>actif</b>. Ton journal, ta santé et ton entourage sont protégés par ton code.';
+    btn.textContent='Changer ou retirer le code';
+  }else{
+    desc.innerHTML='Protège ton journal, ta santé et ton entourage par un code. À l\'ouverture de l\'app, ils resteront fermés jusqu\'à ce que tu entres ton code.';
+    btn.textContent='Activer le coffre';
+  }
+}
+function openVaultSetup(){
+  if(DATA.vaultCode){
+    // déjà actif : changer ou retirer
+    openSheet('<div class="vaultgate"><div class="ic">🔒</div><h3>Gérer le coffre</h3><p>Entre ton code actuel pour le changer ou le retirer.</p>'+
+      '<input class="codeinput" id="vc-current" inputmode="numeric" maxlength="4" placeholder="••••">'+
+      '<button class="bigbtn" id="vc-next" style="max-width:220px;margin:0 auto 10px">Continuer</button>'+
+      '<div id="vc-msg" style="font-size:13px;color:var(--ink-soft)"></div></div>');
+    const cur=document.getElementById('vc-current');setTimeout(()=>cur.focus(),300);
+    document.getElementById('vc-next').addEventListener('click',()=>{
+      if(cur.value!==DATA.vaultCode){document.getElementById('vc-msg').textContent='Code incorrect.';cur.value='';return;}
+      openSheet('<div class="vaultgate"><div class="ic">🔓</div><h3>Nouveau code</h3><p>Entre un nouveau code à 4 chiffres, ou retire la protection.</p>'+
+        '<input class="codeinput" id="vc-new" inputmode="numeric" maxlength="4" placeholder="••••">'+
+        '<button class="bigbtn" id="vc-save" style="max-width:220px;margin:0 auto 10px">Enregistrer le nouveau code</button>'+
+        '<button class="ghostbtn" id="vc-remove" style="max-width:220px;margin:0 auto">Retirer la protection</button></div>');
+      const nw=document.getElementById('vc-new');setTimeout(()=>nw.focus(),300);
+      document.getElementById('vc-save').addEventListener('click',()=>{
+        if(!/^\d{4}$/.test(nw.value)){toast('Choisis 4 chiffres');return;}
+        DATA.vaultCode=nw.value;persist();closeSheet();renderVaultPane();toast('Code mis à jour');
+      });
+      document.getElementById('vc-remove').addEventListener('click',()=>{
+        DATA.vaultCode=null;vaultUnlocked=false;persist();closeSheet();renderVaultPane();toast('Coffre retiré');
+      });
+    });
+  }else{
+    // activer : créer + confirmer
+    openSheet('<div class="vaultgate"><div class="ic">🔒</div><h3>Choisir un code</h3><p>4 chiffres pour protéger ton journal, ta santé et ton entourage.</p>'+
+      '<input class="codeinput" id="vc-a" inputmode="numeric" maxlength="4" placeholder="••••">'+
+      '<button class="bigbtn" id="vc-a-next" style="max-width:220px;margin:0 auto">Continuer</button></div>');
+    const a=document.getElementById('vc-a');setTimeout(()=>a.focus(),300);
+    document.getElementById('vc-a-next').addEventListener('click',()=>{
+      if(!/^\d{4}$/.test(a.value)){toast('Choisis 4 chiffres');return;}
+      const first=a.value;
+      openSheet('<div class="vaultgate"><div class="ic">🔒</div><h3>Confirme ton code</h3><p>Entre-le une seconde fois.</p>'+
+        '<input class="codeinput" id="vc-b" inputmode="numeric" maxlength="4" placeholder="••••">'+
+        '<button class="bigbtn" id="vc-b-save" style="max-width:220px;margin:0 auto">Activer le coffre</button>'+
+        '<div id="vc-b-msg" style="font-size:13px;color:var(--ink-soft);margin-top:8px"></div></div>');
+      const b=document.getElementById('vc-b');setTimeout(()=>b.focus(),300);
+      document.getElementById('vc-b-save').addEventListener('click',()=>{
+        if(b.value!==first){document.getElementById('vc-b-msg').textContent='Les deux codes ne correspondent pas.';b.value='';return;}
+        DATA.vaultCode=first;vaultUnlocked=true;persist();closeSheet();renderVaultPane();toast('Coffre activé');
+      });
+    });
+  }
+}
+
 document.getElementById('do-export').addEventListener('click',()=>{
   const payload={app:'Compagnon',version:VERSION,exportedAt:new Date().toISOString(),data:DATA};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
@@ -799,7 +983,75 @@ document.getElementById('do-import').addEventListener('change',ev=>{
   reader.readAsText(file);
 });
 
-function tick(){const d=new Date();document.getElementById('clock').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+' — bibliothèque calme';}
+/* ============================================================
+   IMPORT DAY ONE
+   ============================================================ */
+function cleanDayOneText(raw){
+  if(!raw)return '';
+  let t=String(raw);
+  // Day One encode souvent les images par \![](dayone-moment://...) : on retire
+  t=t.replace(/!\[\]\(dayone-moment:[^)]*\)/g,'');
+  t=t.replace(/!\[[^\]]*\]\([^)]*\)/g,''); // autres images markdown
+  // alléger le markdown lourd, garder le texte lisible
+  t=t.replace(/^#{1,6}\s+/gm,'');         // titres
+  t=t.replace(/\*\*([^*]+)\*\*/g,'$1');   // gras
+  t=t.replace(/\*([^*\n]+)\*/g,'$1');     // italique (simple, compatible)
+  t=t.replace(/\\\n/g,'\n').replace(/\\([_*#\[\]])/g,'$1'); // échappements
+  t=t.replace(/\n{3,}/g,'\n\n').trim();
+  return t;
+}
+function importDayOne(json){
+  let entries=[];
+  if(Array.isArray(json.entries))entries=json.entries;
+  else if(Array.isArray(json))entries=json;
+  else throw new Error('format');
+  // dates déjà présentes pour éviter les doublons à la réimportation
+  const existingKeys=new Set(DATA.entries.map(e=>e.created+'|'+(e.text||'').slice(0,40)));
+  let added=0, skipped=0;
+  entries.forEach(en=>{
+    const text=cleanDayOneText(en.text||en.richText||'');
+    const created=en.creationDate||en.creationDateRaw||en.date||null;
+    if(!text||!created){skipped++;return;}
+    const iso=new Date(created).toISOString();
+    const key=iso+'|'+text.slice(0,40);
+    if(existingKeys.has(key)){skipped++;return;}
+    existingKeys.add(key);
+    const note={id:Date.now()+Math.random(),text,created:iso,tags:analyze(text),source:'dayone'};
+    // lieu Day One -> trace de lieu
+    if(en.location&&en.location.placeName){
+      const ln='Lieu:'+en.location.placeName;
+      if(!note.tags.includes(ln))note.tags.push(ln);
+    }
+    DATA.entries.push(note);
+    added++;
+  });
+  // re-trier tout le journal par date
+  DATA.entries.sort((a,b)=>new Date(b.created)-new Date(a.created));
+  persist();
+  return {added,skipped,total:entries.length};
+}
+document.getElementById('do-dayone').addEventListener('change',ev=>{
+  const file=ev.target.files[0];if(!file)return;
+  const info=document.getElementById('dayone-info');
+  info.textContent='Lecture du fichier…';
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const json=JSON.parse(reader.result);
+      const count=Array.isArray(json.entries)?json.entries.length:(Array.isArray(json)?json.length:0);
+      if(!count){info.textContent='Aucune entrée trouvée. As-tu bien choisi le fichier Journal.json ?';ev.target.value='';return;}
+      if(!confirm('Importer '+count+' entrée(s) Day One ? Elles s\'ajouteront à ton journal, avec leur date d\'origine.')){info.textContent='Import annulé.';ev.target.value='';return;}
+      const r=importDayOne(json);
+      info.innerHTML='✓ '+r.added+' entrée(s) importée(s)'+(r.skipped?'<br>'+r.skipped+' ignorée(s) (doublons ou vides)':'');
+      toast(r.added+' souvenirs importés');
+      renderHome();
+    }catch(err){
+      info.textContent='Fichier non reconnu. Vérifie que c\'est bien le Journal.json exporté par Day One.';
+    }
+    ev.target.value='';
+  };
+  reader.readAsText(file);
+});
 tick();setInterval(tick,10000);
 const lamp=document.getElementById('lamp');
 function applyTheme(night){document.body.classList.toggle('night',night);lamp.textContent=night?'🌙':'💡';document.querySelector('meta[name=theme-color]').setAttribute('content',night?'#21201C':'#F3EEE3');}
