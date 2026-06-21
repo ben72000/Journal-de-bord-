@@ -79,7 +79,12 @@
   .bubble{position:absolute;border-radius:50%;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
     border:1px solid var(--line)!important;box-shadow:none;transition:transform .25s;text-align:center;background:color-mix(in srgb,var(--card) 70%,transparent)!important}
   .bubble:active{transform:scale(1.07)}
-  .bubble .ic{font-size:16px;line-height:1;opacity:.85}
+  .bubble .ic{font-size:23px;line-height:1;opacity:1;font-weight:700;color:var(--ink)}
+  .bubble[data-fam="projets"] .ic{color:var(--projets)}
+  .bubble[data-fam="quotidien"] .ic{color:var(--quotidien)}
+  .bubble[data-fam="entourage"] .ic{color:var(--entourage)}
+  .bubble[data-fam="intendance"] .ic{color:var(--intendance)}
+  .bubble[data-fam="culture"] .ic{color:var(--culture)}
   .bubble .nm{font-family:'DM Mono',monospace;font-size:8.5px;letter-spacing:.03em;color:var(--ink-soft)}
   .bubble .lock{position:absolute;bottom:8px;right:10px;font-size:9px;opacity:.7}
 
@@ -116,9 +121,9 @@
   .mic{width:50px;height:50px;border-radius:50%;border:1px solid var(--line);background:var(--card);display:grid;place-items:center;font-size:20px;cursor:pointer;flex:0 0 50px;transition:all .2s}
   .mic.rec{background:color-mix(in srgb,var(--entourage) 22%,var(--card));border-color:var(--entourage);animation:pulse 1.3s infinite}
   @keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--entourage) 40%,transparent)}50%{box-shadow:0 0 0 8px transparent}}
-  .save{flex:1;height:50px;border:none;border-radius:5px;color:#3a2c14;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;cursor:pointer;transition:transform .15s;
-    background:linear-gradient(135deg,#E3C074 0%,var(--or) 45%,var(--or-deep) 100%);
-    box-shadow:0 4px 14px color-mix(in srgb,var(--or-deep) 35%,transparent),inset 0 1px 0 rgba(255,255,255,.4)}
+  .save{flex:1;height:54px;border:none;border-radius:6px;color:#3a2c14;font-family:'Fraunces',serif;font-size:16px;letter-spacing:.01em;font-weight:700;cursor:pointer;transition:transform .15s;
+    background:linear-gradient(135deg,#E8C778 0%,var(--or) 45%,var(--or-deep) 100%);
+    box-shadow:0 6px 20px color-mix(in srgb,var(--or-deep) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.5)}
   .save:active{transform:translateY(1px)}
   .save:disabled{background:var(--line);color:var(--ink-soft);box-shadow:none;cursor:default}
   .save:disabled{opacity:.4}
@@ -170,12 +175,13 @@
   .confirm-row .yes{background:var(--no);color:#fff;border-color:var(--no)}
   .confirm-row .no{background:var(--card);color:var(--ink)}
 
-  .bigbtn{width:100%;border:none;border-radius:5px;color:#3a2c14;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.09em;text-transform:uppercase;font-weight:500;padding:15px;cursor:pointer;transition:transform .15s,box-shadow .2s;text-align:center;
-    background:linear-gradient(135deg,#E3C074 0%,var(--or) 45%,var(--or-deep) 100%);
-    box-shadow:0 4px 14px color-mix(in srgb,var(--or-deep) 35%,transparent),inset 0 1px 0 rgba(255,255,255,.4)}
+  .bigbtn{width:100%;border:none;border-radius:6px;color:#3a2c14;font-family:'Fraunces',serif;font-size:16px;letter-spacing:.01em;font-weight:700;padding:17px;cursor:pointer;transition:transform .15s,box-shadow .2s;text-align:center;
+    background:linear-gradient(135deg,#E8C778 0%,var(--or) 45%,var(--or-deep) 100%);
+    box-shadow:0 6px 20px color-mix(in srgb,var(--or-deep) 45%,transparent),inset 0 1px 0 rgba(255,255,255,.5)}
   .bigbtn:active{transform:translateY(1px)}
   .bigbtn:active{opacity:.8}
-  .ghostbtn{width:100%;border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink);font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.04em;padding:13px;cursor:pointer;transition:all .2s;text-align:center}
+  .ghostbtn{width:100%;border:1.5px solid var(--ink);border-radius:6px;background:transparent;color:var(--ink);font-family:'Fraunces',serif;font-size:15px;font-weight:600;letter-spacing:.01em;padding:13px;cursor:pointer;transition:all .2s;text-align:center}
+  .ghostbtn:active{background:var(--ink);color:var(--paper)}
   .ghostbtn:active{background:var(--paper-2)}
 
   .glabel{display:flex;align-items:center;justify-content:space-between;font-size:15px;margin:16px 0 8px}
@@ -247,8 +253,8 @@
           <div class="petal" data-mode="photo">📷</div>
           <div class="petal" data-mode="mail">✉️</div>
           <div class="core" id="core"><span class="plus">+</span><span class="lbl">Dépose quelque chose</span></div>
-          <div class="bubble" data-fam="projets" style="left:130px;top:2px;width:70px;height:70px;background:color-mix(in srgb,var(--projets) 16%,var(--card));border-color:color-mix(in srgb,var(--projets) 35%,var(--line))"><span class="ic">⧖</span><span class="nm">Frise</span></div>
-          <div class="bubble" data-fam="quotidien" style="left:254px;top:92px;width:66px;height:66px;background:color-mix(in srgb,var(--quotidien) 16%,var(--card));border-color:color-mix(in srgb,var(--quotidien) 35%,var(--line))"><span class="ic">◐</span><span class="nm">Quotidien</span><span class="lock">🔒</span></div>
+          <div class="bubble" data-fam="projets" style="left:130px;top:2px;width:70px;height:70px;background:color-mix(in srgb,var(--projets) 16%,var(--card));border-color:color-mix(in srgb,var(--projets) 35%,var(--line))"><span class="ic">◷</span><span class="nm">Frise</span></div>
+          <div class="bubble" data-fam="quotidien" style="left:254px;top:92px;width:66px;height:66px;background:color-mix(in srgb,var(--quotidien) 16%,var(--card));border-color:color-mix(in srgb,var(--quotidien) 35%,var(--line))"><span class="ic">●</span><span class="nm">Quotidien</span><span class="lock">🔒</span></div>
           <div class="bubble" data-fam="entourage" style="left:206px;top:235px;width:68px;height:68px;background:color-mix(in srgb,var(--entourage) 16%,var(--card));border-color:color-mix(in srgb,var(--entourage) 35%,var(--line))"><span class="ic">❀</span><span class="nm">Entourage</span></div>
           <div class="bubble" data-fam="intendance" style="left:60px;top:239px;width:60px;height:60px;background:color-mix(in srgb,var(--intendance) 16%,var(--card));border-color:color-mix(in srgb,var(--intendance) 35%,var(--line))"><span class="ic">▦</span><span class="nm">Radar</span></div>
           <div class="bubble" data-fam="culture" style="left:14px;top:96px;width:58px;height:58px;background:color-mix(in srgb,var(--culture) 16%,var(--card));border-color:color-mix(in srgb,var(--culture) 35%,var(--line))"><span class="ic">✸</span><span class="nm">Culture</span></div>
@@ -336,7 +342,7 @@
         <div class="back" data-go="home">← accueil</div>
         <div class="vtitle">Culture & apprentissage</div>
         <div class="vsub">Tes découvertes notées, tes compétences, tes envies pour un jour.</div>
-        <button class="bigbtn" id="add-culture-btn" style="margin-bottom:12px;background:var(--culture);border-color:var(--culture)">+ Noter une découverte</button>
+        <button class="bigbtn" id="add-culture-btn" style="margin-bottom:12px">+ Noter une découverte</button>
         <div style="display:flex;gap:10px;margin-bottom:18px">
           <button class="ghostbtn" data-go="skills" style="flex:1">🎯 Compétences</button>
           <button class="ghostbtn" data-go="maybe" style="flex:1">💭 Peut-être un jour</button>
@@ -408,7 +414,7 @@
           <div class="accent" style="background:var(--vault)"></div>
           <div style="font-family:'Fraunces',serif;font-size:17px;margin-bottom:5px">🔒 Le coffre</div>
           <div style="color:var(--ink-soft);font-size:14px;line-height:1.5;margin-bottom:13px" id="vault-desc">Protège ton journal, ta santé et ton entourage par un code. À l'ouverture de l'app, ils resteront fermés jusqu'à ce que tu entres ton code.</div>
-          <button class="bigbtn" id="vault-toggle" style="background:var(--vault);border-color:var(--vault)">Activer le coffre</button>
+          <button class="bigbtn" id="vault-toggle" style="">Activer le coffre</button>
           <div style="font-size:12px;color:var(--ink-soft);margin-top:8px;font-style:italic;line-height:1.45">Ce code protège d'un regard indiscret sur ton téléphone. Garde-le en tête : sans lui, plus d'accès à ces espaces.</div>
         </div>
         <div class="pane" style="margin-bottom:14px">
@@ -430,7 +436,7 @@
           <div class="accent" style="background:var(--culture)"></div>
           <div style="font-family:'Fraunces',serif;font-size:17px;margin-bottom:5px">Importer depuis Day One</div>
           <div style="color:var(--ink-soft);font-size:14px;line-height:1.5;margin-bottom:13px">Tu as un journal Day One ? Exporte-le en <b>JSON</b> (Réglages → Export → JSON), décompresse le .zip, et choisis le fichier <b>Journal.json</b>. Toutes tes entrées arrivent ici avec leur date d'origine, et s'ajoutent à ton journal.</div>
-          <label class="bigbtn" style="display:block;background:var(--culture);border-color:var(--culture)">↑ Choisir mon Journal.json<input type="file" id="do-dayone" accept=".json,application/json" style="display:none"></label>
+          <label class="bigbtn" style="display:block">↑ Choisir mon Journal.json<input type="file" id="do-dayone" accept=".json,application/json" style="display:none"></label>
           <div id="dayone-info" style="font-size:13px;color:var(--ink-soft);margin-top:9px;text-align:center"></div>
           <div style="font-size:12px;color:var(--ink-soft);margin-top:8px;font-style:italic;line-height:1.45">Note : le texte et les dates sont importés. Les photos Day One ne le sont pas encore.</div>
         </div>
