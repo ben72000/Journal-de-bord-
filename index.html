@@ -138,6 +138,7 @@
   .addition .atext{font-size:15px;line-height:1.55}
   .addition .adel{cursor:pointer;opacity:.5;font-size:11px}
   .addition .adel:hover{opacity:1}
+  .emeta{margin-top:8px;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.02em;color:var(--ink-soft);opacity:.85}
   .voicememo{margin-top:10px;padding:9px 12px;border-radius:11px;background:color-mix(in srgb,var(--entourage) 10%,var(--card));
     border:1px solid color-mix(in srgb,var(--entourage) 28%,var(--line));font-size:13px;color:var(--entourage);cursor:pointer;font-family:'DM Mono',monospace;letter-spacing:.02em}
   .voicememo:active{opacity:.7}
@@ -205,7 +206,7 @@
 <div class="app">
   <div class="topbar">
     <span class="clock" id="clock">—</span>
-    <div class="topright"><span class="ver" id="ver">v10</span><div class="lamp" id="lamp">💡</div></div>
+    <div class="topright"><span class="ver" id="ver">v12</span><div class="lamp" id="lamp">💡</div></div>
   </div>
 
   <div class="scroll">
@@ -304,6 +305,15 @@
       </div>
     </section>
 
+    <section class="view" data-view="review">
+      <div class="pad">
+        <div class="back" data-go="home">← accueil</div>
+        <div class="vtitle">À trier</div>
+        <div class="vsub">Ces longs textes ressemblent à des articles collés, pas à tes souvenirs. À toi de décider : garder dans ton journal, ou écarter.</div>
+        <div id="review-list"></div>
+      </div>
+    </section>
+
     <section class="view" data-view="cross">
       <div class="pad">
         <div class="back" data-go="journal">← retour</div>
@@ -360,7 +370,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION='v10';
+const VERSION='v12';
 const STORE_KEY='compagnon.data.v3';
 const DEFAULT={entries:[],health:{},rituals:[],products:[],people:[],vaultCode:null};
 function loadAll(){
@@ -394,11 +404,62 @@ function tagColor(t){
   if(t.startsWith('Personne'))return'var(--entourage)';
   if(t.startsWith('Dépense'))return'var(--projets)';
   if(t.startsWith('Lieu'))return'var(--intendance)';
+  if(t.startsWith('Tag'))return'var(--culture)';
   return'var(--quotidien)';
+}
+// détection d'émotion simple par mots-clés (suggestion douce, pas une vérité)
+const EMOTION_WORDS={
+  '😊 joie':['heureux','heureuse','joie','content','contente','ravi','génial','super','formidable','merveilleux','sourire','rire','bonheur'],
+  '😌 calme':['calme','serein','sereine','paisible','tranquille','détendu','reposé','apaisé'],
+  '😔 tristesse':['triste','tristesse','déprimé','déprime','pleuré','pleurer','mélancolie','cafard','seul','solitude'],
+  '😫 fatigue':['fatigué','fatiguée','épuisé','épuisée','crevé','vidé','las','lasse','exténué'],
+  '😠 colère':['énervé','énervée','colère','furieux','agacé','irrité','frustré','rage'],
+  '😰 stress':['stressé','stressée','anxieux','angoissé','inquiet','inquiète','tendu','nerveux','pression','débordé']
+};
+function detectEmotion(text){
+  const low=' '+text.toLowerCase()+' ';
+  for(const [emo,words] of Object.entries(EMOTION_WORDS)){
+    if(words.some(w=>new RegExp('\\b'+w,'i').test(low)))return emo;
+  }
+  return null;
+}
+// détection repas
+const MEAL_WORDS=['déjeuner','dîner','diner','petit-déjeuner','goûter','repas','mangé','manger','restaurant','resto','cuisine','plat','recette','brunch','apéro','apéritif'];
+function detectMeal(text){
+  const low=text.toLowerCase();
+  return MEAL_WORDS.some(w=>new RegExp('\\b'+w,'i').test(low));
+}
+// les notes affichées dans le flux normal (hors "à trier")
+function activeEntries(){return DATA.entries.filter(e=>!e.toReview);}
+function reviewEntries(){return DATA.entries.filter(e=>e.toReview);}
+// détection sommeil + indice de qualité
+function detectSleep(text){
+  const low=text.toLowerCase();
+  const bad=/mal dormi|nuit blanche|insomnie|pas dormi|réveillé|cauchemar|peu dormi|fatigué ce matin/.test(low);
+  const good=/bien dormi|super nuit|grasse matinée|reposé|dormi comme/.test(low);
+  const mention=/\bdormi\b|\bsommeil\b|\bnuit\b|\bréveil\b|\bcoucher\b|\blit\b/.test(low);
+  if(!mention&&!bad&&!good)return null;
+  return {quality: bad?'mauvais':(good?'bon':'mentionné')};
+}
+// détection "article de presse" : long, impersonnel
+function looksLikeArticle(text){
+  if(text.length<600)return false; // les vrais articles sont longs
+  const low=text.toLowerCase();
+  const wordCount=text.split(/\s+/).length;
+  // marqueurs personnels : si beaucoup de "je/j'/moi/mon", c'est probablement personnel
+  const personal=(low.match(/\bj['e]|\bmoi\b|\bmon\b|\bma\b|\bmes\b|\bme\b/g)||[]).length;
+  const personalRatio=personal/wordCount;
+  // un article a peu de "je" relativement à sa longueur
+  return wordCount>120 && personalRatio<0.012;
 }
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;');}
 function frDate(iso){return new Date(iso).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});}
+function frDateYear(iso){return new Date(iso).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});}
 function frTime(iso){return new Date(iso).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});}
+// ligne de temps d'une entrée : date complète avec année + heure exacte en petit
+function stamp(iso){
+  return frDateYear(iso)+' <span style="opacity:.6;font-size:9px">· '+frTime(iso)+'</span>';
+}
 function todayKey(d){d=d||new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function relative(iso){
   const diff=(Date.now()-new Date(iso))/1000;
@@ -422,6 +483,7 @@ function go(v){
   if(v==='rituals')renderRituals();
   if(v==='radar')renderRadar();
   if(v==='people')renderPeople();
+  if(v==='review')renderReview();
   if(v==='search'){renderSearch('');setTimeout(()=>document.getElementById('global-search').focus(),200);}
 }
 document.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.go)));
@@ -475,6 +537,9 @@ function openCapture(mode){
   saveBtn.addEventListener('click',()=>{
     const text=ta.value.trim();if(!text)return;
     const note={id:Date.now(),text,created:new Date().toISOString(),tags:analyze(text)};
+    const emo=detectEmotion(text);if(emo)note.emotion=emo;
+    if(detectMeal(text)){note.tags.push('Repas');note.isMeal=true;}
+    const slp=detectSleep(text);if(slp){note.tags.push('Sommeil');note.sleep=slp.quality;}
     if(memoTitle)note.voiceMemo=memoTitle;
     DATA.entries.unshift(note);
     persist();closeSheet();toast('Noté. C\'est rangé.');renderHome();
@@ -530,8 +595,11 @@ function entryHTML(e){
   return '<div class="entry" data-id="'+e.id+'">'+
     '<div class="del" data-del="'+e.id+'">✕</div>'+
     '<div class="edit" data-edit="'+e.id+'">✎</div>'+
-    '<div class="etime">🕓 '+relative(e.created)+' · '+frTime(e.created)+(e.additions&&e.additions.length?' · modifié':'')+'</div>'+
+    '<div class="etime">🕓 '+stamp(e.created)+(e.additions&&e.additions.length?' · modifié':'')+'</div>'+
     '<div class="etext">'+highlight(e.text,e.tags)+'</div>'+
+    (e.place||e.weather||e.emotion?'<div class="emeta">'+
+      [e.place?'📍 '+esc(e.place):'',e.weather?'🌤 '+esc(e.weather):'',e.emotion?esc(e.emotion):''].filter(Boolean).join('  ·  ')+
+      '</div>':'')+
     (e.voiceMemo?'<div class="voicememo" data-memo="'+esc(e.voiceMemo)+'">🎙️ Mémo : '+esc(e.voiceMemo)+' <span style="opacity:.6">· ouvrir Dictaphone ›</span></div>':'')+
     (chips?'<div class="threads">'+chips+'</div>':'')+
     adds+'</div>';
@@ -619,6 +687,12 @@ function renderHome(){
     m+='<div class="pane"><div class="accent" style="background:var(--quotidien)"></div><div class="row"><span class="lead"><span class="dot" style="background:var(--quotidien)"></span>'+DATA.entries.length+' '+(DATA.entries.length>1?'notes gardées':'note gardée')+'</span><span class="meta">🔒 à toi</span></div></div>';
   }
   mz.innerHTML=m;
+  // carte "à trier" si des articles attendent
+  const nReview=reviewEntries().length;
+  if(nReview){
+    mz.innerHTML+='<div class="pane clickable" data-go="review"><div class="accent" style="background:var(--projets)"></div><div class="row"><span class="lead"><span class="dot" style="background:var(--projets)"></span>'+nReview+' texte'+(nReview>1?'s':'')+' à trier</span><span class="meta">articles ? →</span></div></div>';
+    mz.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.go)));
+  }
 
   const tc=document.getElementById('today-cards');let t='';
   const todayH=DATA.health[todayKey()];
@@ -639,19 +713,38 @@ function renderHome(){
   tc.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.go)));
 
   const r=document.getElementById('recent');
-  if(DATA.entries.length===0){r.innerHTML='<div class="empty">Ton journal est vide pour l\'instant.</div>';}
+  const active=activeEntries();
+  if(active.length===0){r.innerHTML='<div class="empty">Ton journal est vide pour l\'instant.</div>';}
   else{
-    r.innerHTML=DATA.entries.slice(0,3).map(entryHTML).join('')+(DATA.entries.length>3?'<div class="back" data-go="journal" style="margin-top:4px">voir tout le journal →</div>':'');
+    r.innerHTML=active.slice(0,3).map(entryHTML).join('')+(active.length>3?'<div class="back" data-go="journal" style="margin-top:4px">voir tout le journal →</div>':'');
     wireEntries(r);r.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.go)));
   }
 }
 
+function renderReview(){
+  const list=document.getElementById('review-list');
+  const items=reviewEntries();
+  if(items.length===0){list.innerHTML='<div class="empty">Rien à trier. Tout est rangé.</div>';return;}
+  list.innerHTML=items.map(e=>{
+    const preview=e.text.length>300?e.text.slice(0,300)+'…':e.text;
+    return '<div class="entry"><div class="etime">🕓 '+stamp(e.created)+' · '+e.text.split(/\s+/).length+' mots</div>'+
+      '<div class="etext" style="font-size:15px;color:var(--ink-soft)">'+esc(preview)+'</div>'+
+      '<div class="confirm-row"><button class="no" data-keep="'+e.id+'">Garder dans le journal</button><button class="yes" data-discard="'+e.id+'">Écarter</button></div></div>';
+  }).join('');
+  list.querySelectorAll('[data-keep]').forEach(x=>x.addEventListener('click',()=>{
+    const e=DATA.entries.find(en=>en.id==x.dataset.keep);if(e){delete e.toReview;persist();toast('Gardé dans ton journal');renderReview();renderHome();}
+  }));
+  list.querySelectorAll('[data-discard]').forEach(x=>x.addEventListener('click',()=>{
+    DATA.entries=DATA.entries.filter(en=>en.id!=x.dataset.discard);persist();toast('Écarté');renderReview();renderHome();
+  }));
+}
 function renderJournal(){
   const list=document.getElementById('jlist'),c=document.getElementById('jcount');
-  if(DATA.entries.length===0){c.textContent='';list.innerHTML='<div class="empty">Encore rien. Reviens après avoir déposé une pensée.</div>';return;}
-  c.textContent=DATA.entries.length+(DATA.entries.length>1?' entrées':' entrée')+', dans l\'ordre du temps.';
+  const active=activeEntries();
+  if(active.length===0){c.textContent='';list.innerHTML='<div class="empty">Encore rien. Reviens après avoir déposé une pensée.</div>';return;}
+  c.textContent=active.length+(active.length>1?' entrées':' entrée')+', dans l\'ordre du temps.';
   let html='',lastDay='';
-  DATA.entries.forEach(e=>{const day=frDate(e.created);if(day!==lastDay){html+='<div class="eyebrow">'+day+'</div>';lastDay=day;}html+=entryHTML(e);});
+  active.forEach(e=>{const day=frDate(e.created);if(day!==lastDay){html+='<div class="eyebrow">'+day+'</div>';lastDay=day;}html+=entryHTML(e);});
   list.innerHTML=html;wireEntries(list);
 }
 
@@ -669,7 +762,7 @@ function renderHealth(){
       '<button class="bigbtn" id="save-health" style="margin-top:18px">Enregistrer mon état</button>'+
     '</div>'+
     '<div class="pane clickable" id="go-rituals"><div class="accent" style="background:var(--quotidien)"></div><div class="row"><span class="lead"><span class="dot" style="background:var(--quotidien)"></span>Mes rituels</span><span class="meta">'+DATA.rituals.length+' suivi'+(DATA.rituals.length>1?'s':'')+' →</span></div></div>'+
-    healthHistoryHTML();
+    healthHistoryHTML()+journalHealthHTML();
   const energy=document.getElementById('energy'),sleep=document.getElementById('sleep');
   let mood=today.mood||null;
   energy.addEventListener('input',()=>document.getElementById('energy-v').textContent=energy.value+'%');
@@ -681,6 +774,23 @@ function renderHealth(){
     persist();toast('Ton état du jour est noté');renderHealth();
   });
   document.getElementById('go-rituals').addEventListener('click',()=>go('rituals'));
+}
+function journalHealthHTML(){
+  const meals=activeEntries().filter(e=>e.isMeal).slice(0,5);
+  const sleeps=activeEntries().filter(e=>e.sleep).slice(0,5);
+  let html='';
+  if(meals.length){
+    html+='<div class="eyebrow">Repas mentionnés dans ton journal</div><div class="pane">'+
+      meals.map(e=>'<div class="row" style="padding:6px 0"><span class="lead" style="font-size:14px">'+esc(e.text.slice(0,46))+(e.text.length>46?'…':'')+'</span><span class="meta">'+new Date(e.created).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+'</span></div>').join('')+
+      '</div>';
+  }
+  if(sleeps.length){
+    html+='<div class="eyebrow">Nuits évoquées</div><div class="pane">'+
+      sleeps.map(e=>{const ico=e.sleep==='mauvais'?'😴⚠️':e.sleep==='bon'?'😴✓':'😴';
+        return '<div class="row" style="padding:6px 0"><span class="lead" style="font-size:14px">'+ico+' '+esc(e.text.slice(0,40))+(e.text.length>40?'…':'')+'</span><span class="meta">'+new Date(e.created).toLocaleDateString('fr-FR',{day:'numeric',month:'short'})+'</span></div>';}).join('')+
+      '</div>';
+  }
+  return html;
 }
 function healthHistoryHTML(){
   const days=Object.keys(DATA.health).sort().reverse().slice(0,7);
@@ -754,7 +864,7 @@ document.getElementById('radar-search').addEventListener('input',e=>renderRadar(
 function renderSearch(q){
   const box=document.getElementById('search-results');q=q.trim().toLowerCase();
   if(!q){box.innerHTML='<div class="empty">Tape un mot pour chercher dans tout : notes, produits, personnes, lieux.</div>';return;}
-  const noteHits=DATA.entries.filter(e=>e.text.toLowerCase().includes(q)||e.tags.some(t=>t.toLowerCase().includes(q))||(e.additions||[]).some(a=>a.text.toLowerCase().includes(q)));
+  const noteHits=activeEntries().filter(e=>e.text.toLowerCase().includes(q)||e.tags.some(t=>t.toLowerCase().includes(q))||(e.additions||[]).some(a=>a.text.toLowerCase().includes(q)));
   const prodHits=DATA.products.filter(p=>p.name.toLowerCase().includes(q)||(p.note||'').toLowerCase().includes(q));
   let html='';
   if(noteHits.length)html+='<div class="eyebrow">Notes ('+noteHits.length+')</div>'+noteHits.map(entryHTML).join('');
@@ -837,6 +947,26 @@ function renderPeople(){
   }));
 }
 
+function autoInsights(name,es){
+  if(es.length===0)return '';
+  // lieux fréquents
+  const places={};
+  es.forEach(e=>{(e.tags||[]).forEach(t=>{if(t.startsWith('Lieu:')){const l=t.split(':')[1];places[l]=(places[l]||0)+1;}});});
+  const topPlaces=Object.entries(places).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
+  // période
+  const dates=es.map(e=>new Date(e.created)).sort((a,b)=>a-b);
+  const first=dates[0],last=dates[dates.length-1];
+  // repas partagés
+  const meals=es.filter(e=>e.isMeal).length;
+  let bits=[];
+  bits.push(es.length+' moment'+(es.length>1?'s':'')+' ensemble');
+  if(topPlaces.length)bits.push('souvent à '+topPlaces.join(', '));
+  if(meals)bits.push(meals+' repas partagé'+(meals>1?'s':''));
+  bits.push('depuis '+frDateYear(first.toISOString()));
+  return '<div class="eyebrow">Ce que ton journal révèle</div>'+
+    '<div class="pane"><div style="font-size:14.5px;line-height:1.6">'+bits.join(' · ')+'</div>'+
+    '<div style="font-size:12px;color:var(--ink-soft);margin-top:8px;font-style:italic">Rempli automatiquement depuis tes notes. Touche ✎ pour compléter la fiche à la main.</div></div>';
+}
 function openPerson(id){
   const p=DATA.people.find(x=>x.id==id);if(!p)return;
   currentPersonId=id;
@@ -851,6 +981,7 @@ function openPerson(id){
     '</div>'+
     (p.watch&&ls&&((Date.now()-new Date(ls))/86400000>(p.watchDays||90))?
       '<div class="pane" style="background:color-mix(in srgb,var(--entourage) 10%,var(--card))"><div class="accent" style="background:var(--entourage)"></div><div style="font-style:italic;font-size:14.5px">🌱 Tu gardes un œil sur ce lien. Ça fait un moment — un message ?</div></div>':'')+
+    autoInsights(p.name,es)+
     (p.interests?'<div class="eyebrow">Centres d\'intérêt</div><div class="pane">'+esc(p.interests)+'</div>':'')+
     (p.topics?'<div class="eyebrow">Sujets abordés</div><div class="pane">'+esc(p.topics)+'</div>':'')+
     (p.gifts?'<div class="eyebrow">Idées de cadeaux</div><div class="pane">🎁 '+esc(p.gifts)+'</div>':'')+
@@ -1055,13 +1186,27 @@ function extractDayOneDate(en){
   const parsed=new Date(d);
   return isNaN(parsed.getTime())?null:parsed.toISOString();
 }
+function extractDayOnePlace(en){
+  if(!en.location)return null;
+  const l=en.location;
+  // priorité au lieu nommé, sinon ville, sinon pays
+  return l.placeName||l.localityName||l.administrativeArea||l.country||null;
+}
+function extractDayOneWeather(en){
+  if(!en.weather)return null;
+  const w=en.weather;
+  const temp=(w.temperatureCelsius!=null)?Math.round(w.temperatureCelsius)+'°':'';
+  const desc=w.conditionsDescription||w.weatherCode||'';
+  const txt=(desc+' '+temp).trim();
+  return txt||null;
+}
 function importDayOne(json){
   let entries=[];
   if(json&&Array.isArray(json.entries))entries=json.entries;
   else if(Array.isArray(json))entries=json;
   else throw new Error('NO_ENTRIES');
   const existingKeys=new Set(DATA.entries.map(e=>e.created+'|'+(e.text||'').slice(0,40)));
-  let added=0,skipped=0,errors=0;
+  let added=0,skipped=0,errors=0,withPlace=0,withTags=0;
   entries.forEach(en=>{
     try{
       const text=cleanDayOneText(extractDayOneText(en));
@@ -1071,14 +1216,34 @@ function importDayOne(json){
       if(existingKeys.has(key)){skipped++;return;}
       existingKeys.add(key);
       const note={id:Date.now()+Math.random(),text,created:iso,tags:analyze(text),source:'dayone'};
-      const place=en.location&&(en.location.placeName||en.location.localityName);
-      if(place){const ln='Lieu:'+place;if(!note.tags.includes(ln))note.tags.push(ln);}
+      // lieu structuré
+      const place=extractDayOnePlace(en);
+      if(place){const ln='Lieu:'+place;if(!note.tags.includes(ln))note.tags.push(ln);note.place=place;withPlace++;}
+      // coordonnées GPS (pour usage carte futur)
+      if(en.location&&en.location.latitude){note.gps={lat:en.location.latitude,lng:en.location.longitude};}
+      // tags Day One -> traces
+      if(Array.isArray(en.tags)&&en.tags.length){
+        en.tags.forEach(tg=>{const tt='Tag:'+tg;if(!note.tags.includes(tt))note.tags.push(tt);});
+        withTags++;
+      }
+      // météo
+      const weather=extractDayOneWeather(en);
+      if(weather)note.weather=weather;
+      // émotions repérées dans le texte (suggestion douce)
+      const emo=detectEmotion(text);
+      if(emo)note.emotion=emo;
+      // repas / sommeil
+      if(detectMeal(text)){note.tags.push('Repas');note.isMeal=true;}
+      const sleep=detectSleep(text);
+      if(sleep){note.tags.push('Sommeil');note.sleep=sleep.quality;}
+      // article de presse suspecté -> à trier, pas affiché dans le flux normal
+      if(looksLikeArticle(text)){note.toReview=true;}
       DATA.entries.push(note);added++;
     }catch(e){errors++;}
   });
   DATA.entries.sort((a,b)=>new Date(b.created)-new Date(a.created));
   persist();
-  return {added,skipped,errors,total:entries.length};
+  return {added,skipped,errors,withPlace,withTags,total:entries.length};
 }
 document.getElementById('do-dayone').addEventListener('change',ev=>{
   const file=ev.target.files[0];if(!file)return;
@@ -1107,6 +1272,8 @@ document.getElementById('do-dayone').addEventListener('change',ev=>{
     try{
       const r=importDayOne(json);
       info.innerHTML='✓ '+r.added+' entrée(s) importée(s)'+
+        (r.withPlace?'<br>📍 '+r.withPlace+' avec un lieu':'')+
+        (r.withTags?'<br>🏷 '+r.withTags+' avec des tags':'')+
         (r.skipped?'<br>'+r.skipped+' ignorée(s) (doublons ou sans texte)':'')+
         (r.errors?'<br>'+r.errors+' illisible(s)':'');
       toast(r.added+' souvenirs importés');
