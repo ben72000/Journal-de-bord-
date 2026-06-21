@@ -190,7 +190,7 @@
 <div class="app">
   <div class="topbar">
     <span class="clock" id="clock">—</span>
-    <div class="topright"><span class="ver" id="ver">v3</span><div class="lamp" id="lamp">💡</div></div>
+    <div class="topright"><span class="ver" id="ver">v4</span><div class="lamp" id="lamp">💡</div></div>
   </div>
 
   <div class="scroll">
@@ -205,11 +205,11 @@
           <div class="petal" data-mode="photo">📷</div>
           <div class="petal" data-mode="mail">✉️</div>
           <div class="core" id="core"><span class="plus">+</span><span class="lbl">Dépose quelque chose</span></div>
-          <div class="bubble" data-fam="projets" style="--c:var(--projets)"><span class="ic">✦</span><span class="nm">Projets</span></div>
-          <div class="bubble" data-fam="quotidien" style="--c:var(--quotidien)"><span class="ic">◐</span><span class="nm">Quotidien</span><span class="lock">🔒</span></div>
-          <div class="bubble" data-fam="entourage" style="--c:var(--entourage)"><span class="ic">❀</span><span class="nm">Entourage</span></div>
-          <div class="bubble" data-fam="intendance" style="--c:var(--intendance)"><span class="ic">▦</span><span class="nm">Radar</span></div>
-          <div class="bubble" data-fam="culture" style="--c:var(--culture)"><span class="ic">✸</span><span class="nm">Recherche</span></div>
+          <div class="bubble" data-fam="projets" style="left:130px;top:2px;width:70px;height:70px;background:color-mix(in srgb,var(--projets) 16%,var(--card));border-color:color-mix(in srgb,var(--projets) 35%,var(--line))"><span class="ic">✦</span><span class="nm">Projets</span></div>
+          <div class="bubble" data-fam="quotidien" style="left:254px;top:92px;width:66px;height:66px;background:color-mix(in srgb,var(--quotidien) 16%,var(--card));border-color:color-mix(in srgb,var(--quotidien) 35%,var(--line))"><span class="ic">◐</span><span class="nm">Quotidien</span><span class="lock">🔒</span></div>
+          <div class="bubble" data-fam="entourage" style="left:206px;top:235px;width:68px;height:68px;background:color-mix(in srgb,var(--entourage) 16%,var(--card));border-color:color-mix(in srgb,var(--entourage) 35%,var(--line))"><span class="ic">❀</span><span class="nm">Entourage</span></div>
+          <div class="bubble" data-fam="intendance" style="left:60px;top:239px;width:60px;height:60px;background:color-mix(in srgb,var(--intendance) 16%,var(--card));border-color:color-mix(in srgb,var(--intendance) 35%,var(--line))"><span class="ic">▦</span><span class="nm">Radar</span></div>
+          <div class="bubble" data-fam="culture" style="left:14px;top:96px;width:58px;height:58px;background:color-mix(in srgb,var(--culture) 16%,var(--card));border-color:color-mix(in srgb,var(--culture) 35%,var(--line))"><span class="ic">✸</span><span class="nm">Recherche</span></div>
         </div>
         <div class="hint">Touche le centre pour écrire ou dicter. Tes données vivent sur cet appareil, rien que pour toi.</div>
         <div class="eyebrow">Le murmure du jour</div>
@@ -311,7 +311,7 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION='v3';
+const VERSION='v4';
 const STORE_KEY='compagnon.data.v3';
 const DEFAULT={entries:[],health:{},rituals:[],products:[],vaultCode:null};
 function loadAll(){
