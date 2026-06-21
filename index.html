@@ -190,7 +190,7 @@
 <div class="app">
   <div class="topbar">
     <span class="clock" id="clock">—</span>
-    <div class="topright"><span class="ver" id="ver">v4</span><div class="lamp" id="lamp">💡</div></div>
+    <div class="topright"><span class="ver" id="ver">v5</span><div class="lamp" id="lamp">💡</div></div>
   </div>
 
   <div class="scroll">
@@ -262,6 +262,23 @@
       </div>
     </section>
 
+    <section class="view" data-view="people">
+      <div class="pad">
+        <div class="back" data-go="home">← accueil</div>
+        <div class="vtitle">Entourage</div>
+        <div class="vsub">Les détails humains que tu ne veux plus perdre. Tes fiches se relient seules à ton journal.</div>
+        <button class="bigbtn" id="add-person-btn" style="margin-bottom:18px">+ Ajouter une personne</button>
+        <div id="people-list"></div>
+      </div>
+    </section>
+
+    <section class="view" data-view="person">
+      <div class="pad">
+        <div class="back" data-go="people">← entourage</div>
+        <div id="person-body"></div>
+      </div>
+    </section>
+
     <section class="view" data-view="search">
       <div class="pad">
         <div class="back" data-go="home">← accueil</div>
@@ -311,9 +328,9 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const VERSION='v4';
+const VERSION='v5';
 const STORE_KEY='compagnon.data.v3';
-const DEFAULT={entries:[],health:{},rituals:[],products:[],vaultCode:null};
+const DEFAULT={entries:[],health:{},rituals:[],products:[],people:[],vaultCode:null};
 function loadAll(){
   try{const raw=JSON.parse(localStorage.getItem(STORE_KEY));if(raw)return Object.assign({},DEFAULT,raw);}catch{}
   try{const old=JSON.parse(localStorage.getItem('compagnon.entries.v1'));if(Array.isArray(old))return Object.assign({},DEFAULT,{entries:old});}catch{}
@@ -322,11 +339,18 @@ function loadAll(){
 let DATA=loadAll();
 function persist(){localStorage.setItem(STORE_KEY,JSON.stringify(DATA));}
 
-const KNOWN_PEOPLE=['Paul','Marie','Léa','Lucas','Sophie','Thomas','Julie','maman','papa'];
+const COMMON_NAMES=['Paul','Marie','Léa','Lucas','Sophie','Thomas','Julie','maman','papa'];
 const PLACE_HINTS=['restaurant','resto','café','bar','cinéma','parc','musée','plage','chez'];
+function knownPeople(){
+  const created=(DATA.people||[]).map(p=>p.name).filter(Boolean);
+  return [...new Set([...created,...COMMON_NAMES])];
+}
 function analyze(text){
   const tags=new Set();
-  KNOWN_PEOPLE.forEach(p=>{if(new RegExp('\\b'+p+'\\b','i').test(text))tags.add('Personne:'+p[0].toUpperCase()+p.slice(1));});
+  knownPeople().forEach(p=>{
+    const e=p.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    if(new RegExp('\\b'+e+'\\b','i').test(text))tags.add('Personne:'+p[0].toUpperCase()+p.slice(1));
+  });
   const money=text.match(/(\d+([.,]\d{1,2})?)\s?(€|euros?|eur)/i);
   if(money)tags.add('Dépense:'+money[1]+' €');
   PLACE_HINTS.forEach(h=>{if(new RegExp('\\b'+h,'i').test(text))tags.add('Lieu');});
@@ -365,6 +389,7 @@ function go(v){
   if(v==='health')renderHealth();
   if(v==='rituals')renderRituals();
   if(v==='radar')renderRadar();
+  if(v==='people')renderPeople();
   if(v==='search'){renderSearch('');setTimeout(()=>document.getElementById('global-search').focus(),200);}
 }
 document.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.go)));
@@ -373,7 +398,7 @@ document.querySelectorAll('.bubble').forEach(b=>b.addEventListener('click',()=>{
   if(f==='quotidien')go('health');
   else if(f==='intendance')go('radar');
   else if(f==='culture')go('search');
-  else if(f==='entourage')openCross('Personne');
+  else if(f==='entourage')go('people');
   else toast('« '+b.querySelector('.nm').textContent+' » arrive bientôt');
 }));
 document.getElementById('backup-access').addEventListener('click',()=>go('backup'));
@@ -443,7 +468,16 @@ function wireEntries(scope){
     ev.stopPropagation();DATA.entries=DATA.entries.filter(e=>e.id!=x.dataset.del);persist();
     renderHome();renderJournal();toast('Entrée retirée');
   }));
-  scope.querySelectorAll('[data-cross]').forEach(x=>x.addEventListener('click',ev=>{ev.stopPropagation();openCross(x.dataset.cross);}));
+  scope.querySelectorAll('[data-cross]').forEach(x=>x.addEventListener('click',ev=>{
+    ev.stopPropagation();
+    const tag=x.dataset.cross;
+    if(tag.startsWith('Personne:')){
+      const name=tag.split(':')[1];
+      const person=(DATA.people||[]).find(p=>p.name.toLowerCase()===name.toLowerCase());
+      if(person){openPerson(person.id);return;}
+    }
+    openCross(tag);
+  }));
 }
 
 function renderHome(){
@@ -477,6 +511,9 @@ function renderHome(){
     t+='<div class="pane clickable" data-go="rituals"><div class="accent" style="background:var(--quotidien)"></div><div class="row"><span class="lead"><span class="dot" style="background:var(--quotidien)"></span>Rituels</span><span class="meta">'+doneToday+'/'+DATA.rituals.length+' aujourd\'hui</span></div></div>';}
   if(DATA.products.length){const love=DATA.products.filter(p=>p.verdict==='love').length;
     t+='<div class="pane clickable" data-go="radar"><div class="accent" style="background:var(--intendance)"></div><div class="row"><span class="lead"><span class="dot" style="background:var(--intendance)"></span>Radar produits</span><span class="meta">'+DATA.products.length+' noté'+(DATA.products.length>1?'s':'')+(love?' · '+love+' ♥':'')+'</span></div></div>';}
+  if(DATA.people&&DATA.people.length){
+    const toReach=DATA.people.filter(p=>{if(!p.watch)return false;const ls=lastSeen(p.name);const days=ls?(Date.now()-new Date(ls))/86400000:9999;return days>(p.watchDays||90);}).length;
+    t+='<div class="pane clickable" data-go="people"><div class="accent" style="background:var(--entourage)"></div><div class="row"><span class="lead"><span class="dot" style="background:var(--entourage)"></span>Entourage</span><span class="meta">'+DATA.people.length+' fiche'+(DATA.people.length>1?'s':'')+(toReach?' · '+toReach+' 🌱':'')+'</span></div></div>';}
   tc.innerHTML=t;
   tc.querySelectorAll('[data-go]').forEach(el=>el.addEventListener('click',()=>go(el.dataset.go)));
 
@@ -606,6 +643,111 @@ function renderSearch(q){
   box.innerHTML=html;wireEntries(box);
 }
 document.getElementById('global-search').addEventListener('input',e=>renderSearch(e.target.value));
+
+/* ============================================================
+   ENTOURAGE — fiches personnes reliées au journal
+   ============================================================ */
+let currentPersonId=null;
+
+function personEntries(name){
+  // les notes du journal qui mentionnent cette personne
+  const tag='Personne:'+name[0].toUpperCase()+name.slice(1);
+  return DATA.entries.filter(e=>e.tags.includes(tag)||new RegExp('\\b'+name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b','i').test(e.text));
+}
+function lastSeen(name){
+  const es=personEntries(name);
+  return es.length?es[0].created:null;
+}
+
+function renderPeople(){
+  const list=document.getElementById('people-list');
+  if(!DATA.people||DATA.people.length===0){
+    list.innerHTML='<div class="empty">Personne pour l\'instant. Ajoute les gens qui comptent — l\'app reliera ensuite tes notes à eux.</div>';
+    return;
+  }
+  const sorted=DATA.people.slice().sort((a,b)=>a.name.localeCompare(b.name));
+  list.innerHTML=sorted.map(p=>{
+    const ls=lastSeen(p.name);
+    const initial=p.name[0].toUpperCase();
+    let alert='';
+    if(p.watch){
+      const days=ls?(Date.now()-new Date(ls))/86400000:9999;
+      const limit=p.watchDays||90;
+      if(days>limit)alert='<span class="meta" style="color:var(--entourage)">🌱 à recontacter</span>';
+    }
+    return '<div class="prod clickable" data-person="'+p.id+'">'+
+      '<div class="pverdict" style="background:color-mix(in srgb,var(--entourage) 20%,var(--card));color:var(--entourage);font-family:\'Fraunces\',serif">'+initial+'</div>'+
+      '<div style="flex:1"><div class="nm">'+esc(p.name)+'</div><div class="meta">'+(p.context?esc(p.context):(ls?'vu '+relative(ls):'pas encore de note'))+'</div></div>'+
+      alert+'</div>';
+  }).join('');
+  list.querySelectorAll('[data-person]').forEach(el=>el.addEventListener('click',()=>openPerson(el.dataset.person)));
+}
+
+function openPerson(id){
+  const p=DATA.people.find(x=>x.id==id);if(!p)return;
+  currentPersonId=id;
+  const es=personEntries(p.name);
+  const ls=lastSeen(p.name);
+  const body=document.getElementById('person-body');
+  body.innerHTML=
+    '<div style="display:flex;align-items:center;gap:15px;margin-bottom:18px">'+
+      '<div style="width:58px;height:58px;border-radius:50%;background:color-mix(in srgb,var(--entourage) 22%,var(--card));display:grid;place-items:center;font-family:\'Fraunces\',serif;font-size:24px;color:var(--entourage);border:1px solid color-mix(in srgb,var(--entourage) 35%,transparent)">'+p.name[0].toUpperCase()+'</div>'+
+      '<div style="flex:1"><div class="vtitle" style="margin:0">'+esc(p.name)+'</div>'+(p.context?'<div class="meta">'+esc(p.context)+'</div>':'')+'</div>'+
+      '<div class="rdel" data-edit-person="'+p.id+'" style="cursor:pointer;font-size:16px">✎</div>'+
+    '</div>'+
+    (p.watch&&ls&&((Date.now()-new Date(ls))/86400000>(p.watchDays||90))?
+      '<div class="pane" style="background:color-mix(in srgb,var(--entourage) 10%,var(--card))"><div class="accent" style="background:var(--entourage)"></div><div style="font-style:italic;font-size:14.5px">🌱 Tu gardes un œil sur ce lien. Ça fait un moment — un message ?</div></div>':'')+
+    (p.interests?'<div class="eyebrow">Centres d\'intérêt</div><div class="pane">'+esc(p.interests)+'</div>':'')+
+    (p.topics?'<div class="eyebrow">Sujets abordés</div><div class="pane">'+esc(p.topics)+'</div>':'')+
+    (p.gifts?'<div class="eyebrow">Idées de cadeaux</div><div class="pane">🎁 '+esc(p.gifts)+'</div>':'')+
+    '<div class="eyebrow">Vécu ensemble ('+es.length+')</div>'+
+    (es.length?es.map(entryHTML).join(''):'<div class="empty">Aucune note ne mentionne '+esc(p.name)+' encore. Écris « '+esc(p.name)+' » dans ton journal et ça apparaîtra ici.</div>');
+  wireEntries(body);
+  body.querySelector('[data-edit-person]').addEventListener('click',()=>openPersonSheet(p));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('show',s.dataset.view==='person'));
+  document.querySelector('.scroll').scrollTo({top:0,behavior:'smooth'});
+}
+
+function openPersonSheet(existing){
+  const p=existing||{};
+  openSheet(
+    '<h3>'+(existing?'Modifier la fiche':'Nouvelle personne')+'</h3>'+
+    '<div class="sub">Remplis ce que tu veux. Même juste un prénom suffit.</div>'+
+    '<input class="input" id="pe-name" placeholder="Prénom ou nom" value="'+(p.name?esc(p.name).replace(/"/g,'&quot;'):'')+'">'+
+    '<input class="input" id="pe-context" placeholder="Contexte de rencontre (au mariage de…)" value="'+(p.context?esc(p.context).replace(/"/g,'&quot;'):'')+'">'+
+    '<input class="input" id="pe-interests" placeholder="Centres d\'intérêt" value="'+(p.interests?esc(p.interests).replace(/"/g,'&quot;'):'')+'">'+
+    '<input class="input" id="pe-topics" placeholder="Sujets abordés" value="'+(p.topics?esc(p.topics).replace(/"/g,'&quot;'):'')+'">'+
+    '<input class="input" id="pe-gifts" placeholder="Idées de cadeaux" value="'+(p.gifts?esc(p.gifts).replace(/"/g,'&quot;'):'')+'">'+
+    '<label style="display:flex;align-items:center;gap:10px;margin:6px 0 14px;font-size:14.5px;cursor:pointer">'+
+      '<input type="checkbox" id="pe-watch" '+(p.watch?'checked':'')+' style="width:20px;height:20px"> Me rappeler si je perds le contact</label>'+
+    '<div class="sheet-actions">'+(existing?'<button class="mic" id="pe-del" style="color:var(--no)">🗑</button>':'')+'<button class="save" id="pe-save" disabled>Enregistrer</button></div>'
+  );
+  const name=document.getElementById('pe-name'),ps=document.getElementById('pe-save');
+  function chk(){ps.disabled=!name.value.trim();}
+  name.addEventListener('input',chk);chk();
+  ps.addEventListener('click',()=>{
+    const obj={
+      name:name.value.trim(),
+      context:document.getElementById('pe-context').value.trim(),
+      interests:document.getElementById('pe-interests').value.trim(),
+      topics:document.getElementById('pe-topics').value.trim(),
+      gifts:document.getElementById('pe-gifts').value.trim(),
+      watch:document.getElementById('pe-watch').checked,
+      watchDays:90
+    };
+    if(existing){Object.assign(existing,obj);}
+    else{obj.id=Date.now();DATA.people.push(obj);}
+    persist();closeSheet();toast(existing?'Fiche mise à jour':'Personne ajoutée');
+    if(existing)openPerson(existing.id);else renderPeople();
+  });
+  if(existing){document.getElementById('pe-del').addEventListener('click',()=>{
+    if(confirm('Supprimer la fiche de '+existing.name+' ? (tes notes du journal restent)')){
+      DATA.people=DATA.people.filter(x=>x.id!==existing.id);persist();closeSheet();toast('Fiche supprimée');go('people');
+    }
+  });}
+  setTimeout(()=>name.focus(),300);
+}
+document.getElementById('add-person-btn').addEventListener('click',()=>openPersonSheet(null));
 
 function openCross(tag){
   const matched=DATA.entries.filter(e=>e.tags.includes(tag)||(tag==='Personne'&&e.tags.some(t=>t.startsWith('Personne')))||(tag==='Lieu'&&e.tags.some(t=>t.startsWith('Lieu'))));
